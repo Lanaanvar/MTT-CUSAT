@@ -35,20 +35,19 @@ root/
 
 ## ✅ Feature Checklist
 
-| Feature             | Status          |
-|---------------------|-----------------|
-| Homepage            | [] Not Completed |
-| Menu (Navbar)       | [] Not Completed |
-| Footer              | [] Not Completed |
-| Events Page         | [] Not Completed |
-| └── Event Register  | [] Not Completed |
-| Blog Section        | [] Not Completed |
-| Execom Members Page | [] Not Completed |
-| └── Member Cards    | [] Not Completed |
-| Credits Section     | [] Not Completed |
-| Routing (React Router) | [] Not Completed |
-| Tailwind / CSS Styling | [] Not Completed |
-| Backend Integration | [] Not Completed |
+
+- [ ] Homepage
+- [ ] Menu (Navbar)         
+- [ ] Footer                
+- [ ] Events Page           
+- [ ] └── Event Register    
+- [ ] Blog Section          
+- [ ] Execom Members Page   
+- [ ] └── Member Cards      
+- [ ] Credits Section       
+- [ ] Routing (React Router)   
+- [ ] Tailwind / CSS Styling   
+- [ ] Backend Integration   
 
 > Tick off items as features get implemented.
 
