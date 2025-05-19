@@ -37,7 +37,7 @@ root/
 
 
 - [ ] Homepage
-- [ ] Menu (Navbar)         
+- [x] Menu (Navbar)         
 - [ ] Footer                
 - [ ] Events Page           
 - [ ] └── Event Register    
