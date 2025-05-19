@@ -6,31 +6,44 @@ Official website for the IEEE Microwave Theory and Techniques Society (MTT-S) CU
 
 ## 🚀 Tech Stack
 
-- [Vite](https://vitejs.dev/) – Fast frontend build tool
-- [React](https://react.dev/) – Frontend framework
-- [React Router](https://reactrouter.com/) – Client-side routing
+- [Next](https://nextjs.org/) – Fast frontend build tool
+- [React](https://reactjs.org/) – Frontend framework
 - [Tailwind CSS](https://tailwindcss.com/) or plain CSS – For styling
 - [Express.js](https://expressjs.com/) – Backend API for event registration
 - [MongoDB (optional)](https://www.mongodb.com/) – For storing registered data
 
 ---
-
 ## 📁 Project Structure
 
-```bash
-
-root/
-├── client/             # React frontend (Vite)
-│   ├── src/
-│   │   ├── components/ # Shared components (Navbar, Footer, etc.)
-│   │   ├── pages/      # Route pages (Home, Events, Blog, etc.)
-│   │   └── App.jsx
-│   └── index.html
-└── server/             # backend for registration
-└── index.js
-
-````
-
+```
+├── app/ # Next.js App Router structure
+│ ├── about/ # About page
+│ ├── blog/ # Blog section
+│ ├── contact/ # Contact form/page
+│ ├── events/ # Events + event registration
+│ ├── join/ # Join us / membership section
+│ ├── members/ # Execom members
+│ ├── globals.css # Global CSS (tailwind base)
+│ ├── layout.tsx # Root layout file
+│ └── page.tsx # Homepage
+│
+├── components/
+│ └── ui/ # Reusable UI components
+│ ├── footer.tsx
+│ ├── navbar.tsx
+│ ├── theme-provider.tsx
+│ └── upcoming-events.tsx
+│
+├── hooks/ # Custom React hooks
+│
+├── lib/ # Utilities and helpers
+│ └── utils.ts
+│
+├── public/ # Static assets
+│
+├── styles/
+│ └── globals.css # Extra styles if any
+```
 ---
 
 ## ✅ Feature Checklist
@@ -38,15 +51,13 @@ root/
 
 - [ ] Homepage
 - [x] Menu (Navbar)         
-- [ ] Footer                
-- [ ] Events Page           
+- [x] Footer                
+- [x] Events Page           
 - [ ] └── Event Register    
-- [ ] Blog Section          
-- [ ] Execom Members Page   
-- [ ] └── Member Cards      
+- [x] Blog Section          
+- [x] Execom Members Page   
+- [x] └── Member Cards      
 - [ ] Credits Section       
-- [ ] Routing (React Router)   
-- [ ] Tailwind / CSS Styling   
 - [ ] Backend Integration   
 
 > Tick off items as features get implemented.
@@ -75,7 +86,7 @@ npm install
 npm run dev
 ```
 
-The frontend will be available at `http://localhost:5173`
+The frontend will be available at `http://localhost:3000`
 
 ### Backend (Server)
 
