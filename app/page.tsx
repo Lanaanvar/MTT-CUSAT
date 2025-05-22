@@ -21,7 +21,7 @@ export default function Home() {
                   Explore Events <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
-              <Button asChild size="lg" variant="outline" className="border-white text-white hover:bg-blue-800">
+              <Button asChild size="lg" variant="outline" className="border-white text-blue-900 hover:bg-blue-50">
                 <Link href="/join">Join MTT-S</Link>
               </Button>
             </div>
