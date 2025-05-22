@@ -8,44 +8,36 @@ const getEventById = (id: string) => {
   const events = [
     {
       id: "1",
-      title: "Workshop on RF Circuit Design",
-      date: "June 15, 2023",
-      time: "10:00 AM - 4:00 PM",
-      location: "CUSAT Seminar Hall",
-      type: "Workshop",
-      image: "/placeholder.svg?height=400&width=800&text=RF+Circuit+Design",
-      description:
-        "Learn the fundamentals of RF circuit design with hands-on exercises using industry-standard tools. This workshop is designed for students and professionals who want to gain practical knowledge in RF circuit design and simulation.",
-      status: "upcoming",
+    title: "Inaguration and Talk Session",
+    date: "June 07, 2025",
+    time: "09:00 AM",
+    location: "DOE CUSAT",
+    type: "Talk Session",
+    image: "/mtdinvitation@4x.png",
+    description: "Inaguration Ceremony of the IEEE Microwaves Theory and Techniques Society CUSAT SB",
+    status: "upcoming",
       speakers: [
         {
-          name: "Dr. Anand Kumar",
-          designation: "Professor, Department of Electronics, CUSAT",
-          image: "/placeholder.svg?height=100&width=100&text=AK",
-          bio: "Dr. Anand Kumar is a professor with over 15 years of experience in RF and microwave engineering. He has published numerous papers in international journals and conferences.",
+          name: "Dr. Arya Menon",
+          designation: "Assistant Professor, Department of Electrical and Computer Engineering, TAMU",
+          image: "/Dr.AryaMenon.webp",
+          bio: "Dr. Arya Menon is an Assistant Professor in the Department of Electrical and Computer Engineering at Texas A&M University (TAMU). Her research interests include radars, radiometers, electromagnetic modeling, high-frequency dielectric characterization, datasets for wireless signals, and microwave calibration techniques.She has won several awards, including being nominated as a Protégé at the Texas Academy of Medicine, Engineering, Science, and Technology (TAMEST) 2023 Annual Conference, selected as a 2022 DARPA Riser, and receiving the 2020 ARTFG Roger Pollard Student Fellowship (Silver) and the 2019 IEEE Microwave Theory and Techniques Society Graduate Fellowship.",
         },
-        {
-          name: "Eng. Priya Menon",
-          designation: "RF Design Engineer, Qualcomm",
-          image: "/placeholder.svg?height=100&width=100&text=PM",
-          bio: "Eng. Priya Menon is an experienced RF design engineer with expertise in 5G technology and antenna design.",
-        },
+        
       ],
       agenda: [
-        { time: "10:00 AM - 10:30 AM", activity: "Registration and Welcome" },
-        { time: "10:30 AM - 12:00 PM", activity: "Introduction to RF Circuit Design" },
-        { time: "12:00 PM - 1:00 PM", activity: "Lunch Break" },
-        { time: "1:00 PM - 3:00 PM", activity: "Hands-on Session with Simulation Tools" },
-        { time: "3:00 PM - 3:30 PM", activity: "Tea Break" },
-        { time: "3:30 PM - 4:00 PM", activity: "Q&A and Closing Remarks" },
+        // { time: "10:00 AM - 10:30 AM", activity: "Registration and Welcome" },
+        // { time: "10:30 AM - 12:00 PM", activity: "Introduction to RF Circuit Design" },
+        // { time: "12:00 PM - 1:00 PM", activity: "Lunch Break" },
+        // { time: "1:00 PM - 3:00 PM", activity: "Hands-on Session with Simulation Tools" },
+        // { time: "3:00 PM - 3:30 PM", activity: "Tea Break" },
+        // { time: "3:30 PM - 4:00 PM", activity: "Q&A and Closing Remarks" },
       ],
       prerequisites: [
-        "Basic knowledge of electronics",
-        "Familiarity with circuit design concepts",
-        "Laptop with MATLAB or equivalent software installed",
+        
       ],
-      capacity: 50,
-      registrationFee: "₹500 for IEEE members, ₹800 for non-members",
+      capacity: 100,
+      registrationFee: "Free For all",
     },
     // More events would be here
   ]
@@ -188,7 +180,7 @@ export default function EventDetailPage({ params }: { params: { id: string } }) 
             <Button asChild className="w-full bg-blue-900 hover:bg-blue-800 mb-3">
               <Link href={`/events/${event.id}/register`}>Register Now</Link>
             </Button>
-            <p className="text-sm text-gray-500 text-center">Registration closes on June 10, 2023</p>
+            <p className="text-sm text-gray-500 text-center">Registration closes on June 07, 2025</p>
           </div>
         </div>
       </div>
