@@ -13,14 +13,6 @@ export default function Footer() {
               Advancing microwave theory, techniques, and applications through innovation and education.
             </p>
             <div className="flex space-x-4">
-              <Link href="https://facebook.com" className="text-gray-400 hover:text-white transition-colors">
-                <Facebook className="h-5 w-5" />
-                <span className="sr-only">Facebook</span>
-              </Link>
-              <Link href="https://twitter.com" className="text-gray-400 hover:text-white transition-colors">
-                <Twitter className="h-5 w-5" />
-                <span className="sr-only">Twitter</span>
-              </Link>
               <Link href="https://instagram.com" className="text-gray-400 hover:text-white transition-colors">
                 <Instagram className="h-5 w-5" />
                 <span className="sr-only">Instagram</span>
@@ -84,16 +76,6 @@ export default function Footer() {
                   className="text-gray-400 hover:text-white transition-colors"
                 >
                   IEEE Membership
-                </Link>
-              </li>
-              <li>
-                <Link href="/gallery" className="text-gray-400 hover:text-white transition-colors">
-                  Gallery
-                </Link>
-              </li>
-              <li>
-                <Link href="/faq" className="text-gray-400 hover:text-white transition-colors">
-                  FAQ
                 </Link>
               </li>
             </ul>
