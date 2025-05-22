@@ -13,20 +13,20 @@ const getEventById = (id: string) => {
     time: "09:00 AM",
     location: "DOE CUSAT",
     type: "Talk Session",
-    image: "/mtdinvitation@4x.png",
+    image: "/Events/inaguration/mtdinvitation@4x.png",
     description: "Inaguration Ceremony of the IEEE Microwaves Theory and Techniques Society CUSAT SB",
     status: "upcoming",
       speakers: [
         {
           name: "Dr. Arya Menon",
           designation: "Assistant Professor, Department of Electrical and Computer Engineering, TAMU",
-          image: "/Dr.AryaMenon.webp",
+          image: "/Events/inaguration/Dr.AryaMenon.webp",
           bio: "Dr. Arya Menon is an Assistant Professor in the Department of Electrical and Computer Engineering at Texas A&M University (TAMU). Her research interests include radars, radiometers, electromagnetic modeling, high-frequency dielectric characterization, datasets for wireless signals, and microwave calibration techniques.She has won several awards, including being nominated as a Protégé at the Texas Academy of Medicine, Engineering, Science, and Technology (TAMEST) 2023 Annual Conference, selected as a 2022 DARPA Riser, and receiving the 2020 ARTFG Roger Pollard Student Fellowship (Silver) and the 2019 IEEE Microwave Theory and Techniques Society Graduate Fellowship.",
         },
         
       ],
       agenda: [
-        // { time: "10:00 AM - 10:30 AM", activity: "Registration and Welcome" },
+        { time: "09:00 AM - 12:00 PM", activity: "Talk Session" },
         // { time: "10:30 AM - 12:00 PM", activity: "Introduction to RF Circuit Design" },
         // { time: "12:00 PM - 1:00 PM", activity: "Lunch Break" },
         // { time: "1:00 PM - 3:00 PM", activity: "Hands-on Session with Simulation Tools" },

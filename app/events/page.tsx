@@ -15,7 +15,7 @@ const events = [
     time: "09:00 AM",
     location: "DOE CUSAT",
     type: "Talk Session",
-    image: "/mtdinvitation@4x.png",
+    image: "/Events/inaguration/mtdinvitation@4x.png",
     description: "Inaguration Ceremony of the IEEE Microwaves Theory and Techniques Society CUSAT SB",
     status: "upcoming",
   },
