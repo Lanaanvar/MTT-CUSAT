@@ -4,39 +4,19 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 
-// Sample upcoming events data
+// upcoming events data
 const upcomingEvents = [
-  {
-    id: 1,
-    title: "Workshop on RF Circuit Design",
-    date: "June 15, 2023",
-    time: "10:00 AM - 4:00 PM",
-    location: "CUSAT Seminar Hall",
-    type: "Workshop",
-    image: "/placeholder.svg?height=200&width=400&text=RF+Circuit+Design",
-    description: "Learn the fundamentals of RF circuit design with hands-on exercises using industry-standard tools.",
-  },
-  {
-    id: 2,
-    title: "Guest Lecture: 5G and Beyond",
-    date: "June 22, 2023",
-    time: "2:00 PM - 4:00 PM",
-    location: "Online (Zoom)",
-    type: "Lecture",
-    image: "/placeholder.svg?height=200&width=400&text=5G+and+Beyond",
-    description:
-      "Join us for an insightful lecture on the future of 5G technology and what lies beyond by industry experts.",
-  },
-  {
-    id: 3,
-    title: "Microwave Hackathon 2023",
-    date: "July 8-9, 2023",
-    time: "9:00 AM - 6:00 PM",
-    location: "CUSAT Innovation Center",
-    type: "Hackathon",
-    image: "/placeholder.svg?height=200&width=400&text=Microwave+Hackathon",
-    description: "A 24-hour hackathon focused on solving real-world problems using microwave and RF technologies.",
-  },
+   {
+      id: "1",
+    title: "Inaguration and Talk Session",
+    date: "June 07, 2025",
+    time: "09:00 AM",
+    location: "DOE CUSAT",
+    type: "Talk Session",
+    image: "/Events/inaguration/mtdinvitation@4x.png",
+    description: "Inaguration Ceremony of the IEEE Microwaves Theory and Techniques Society CUSAT SB",
+    status: "upcoming",
+   },
 ]
 
 export default function UpcomingEvents() {
