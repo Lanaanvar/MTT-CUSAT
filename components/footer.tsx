@@ -1,7 +1,46 @@
+"use client"
+
 import Link from "next/link"
 import { Facebook, Twitter, Instagram, Linkedin, Mail, MapPin, Phone } from "lucide-react"
+import { useState } from "react"
+
+interface TeamMember {
+  name: string;
+  linkedin: string;
+}
+
+const TeamModal = ({ isVisible, onMouseLeave }: { isVisible: boolean; onMouseLeave: () => void }) => {
+  const teamMembers: TeamMember[] = [
+    { name: "Revathy", linkedin: "https://linkedin.com/in/revathy" },
+    { name: "Ronaq", linkedin: "https://linkedin.com/in/ronaq" },
+    { name: "Dheeraj", linkedin: "https://linkedin.com/in/dheeraj" },
+    { name: "Lena", linkedin: "https://linkedin.com/in/lena" },
+  ];
+
+  if (!isVisible) return null;
+
+  return (
+    <div
+      className="absolute bottom-full mb-2 bg-white text-gray-900 p-4 rounded-lg shadow-lg"
+      onMouseLeave={onMouseLeave}
+    >
+      <div className="space-y-2">
+        {teamMembers.map((member) => (
+          <div key={member.name} className="flex items-center gap-2">
+            <span>{member.name}</span>
+            <Link href={member.linkedin} target="_blank" rel="noopener noreferrer">
+              <Linkedin className="h-4 w-4 text-blue-600" />
+            </Link>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
 
 export default function Footer() {
+  const [showTeamModal, setShowTeamModal] = useState(false);
+
   return (
     <footer className="bg-gray-900 text-white">
       <div className="container mx-auto px-4 md:px-6 py-12">
@@ -114,7 +153,19 @@ export default function Footer() {
           <p className="text-gray-400 text-sm">
             © {new Date().getFullYear()} IEEE MTT-S CUSAT SB. All rights reserved.
           </p>
-          <div className="mt-4 md:mt-0">
+          <div className="mt-4 md:mt-0 flex items-center gap-6">
+            <div className="relative">
+              <span 
+                className="text-gray-400 text-sm cursor-pointer hover:text-white transition-colors"
+                onMouseEnter={() => setShowTeamModal(true)}
+              >
+                Made with ❤️ by <span className="underline">Us!</span>
+              </span>
+              <TeamModal 
+                isVisible={showTeamModal} 
+                onMouseLeave={() => setShowTeamModal(false)} 
+              />
+            </div>
             <ul className="flex space-x-6 text-sm">
               <li>
                 <Link href="/privacy" className="text-gray-400 hover:text-white transition-colors">

@@ -1,31 +1,71 @@
+"use client"
+
 import Link from "next/link"
 import { Calendar, Clock, MapPin } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-
-// upcoming events data
-const upcomingEvents = [
-   {
-      id: "1",
-    title: "Inaguration and Talk Session",
-    date: "June 07, 2025",
-    time: "09:00 AM",
-    location: "DOE CUSAT",
-    type: "Talk Session",
-    image: "/Events/inaguration/mtdinvitation@4x.png",
-    description: "Inaguration Ceremony of the IEEE Microwaves Theory and Techniques Society CUSAT SB",
-    status: "upcoming",
-   },
-]
+import { getEvents, type Event } from "@/lib/services/events"
+import { useEffect, useState } from "react"
 
 export default function UpcomingEvents() {
+  const [events, setEvents] = useState<Event[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const fetchedEvents = await getEvents({ status: 'upcoming' })
+        // Take only the first 3 events
+        setEvents(fetchedEvents.slice(0, 3))
+      } catch (error) {
+        console.error('Error fetching events:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchEvents()
+  }, [])
+
+  if (loading) {
+    return (
+      <div className="grid md:grid-cols-3 gap-6">
+        {[1, 2, 3].map((i) => (
+          <Card key={i} className="overflow-hidden">
+            <div className="relative h-48 bg-gray-200 animate-pulse" />
+            <CardHeader className="pb-2">
+              <div className="h-6 bg-gray-200 rounded animate-pulse" />
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {[1, 2, 3].map((j) => (
+                <div key={j} className="h-4 bg-gray-200 rounded animate-pulse" />
+              ))}
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    )
+  }
+
+  if (events.length === 0) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-gray-600">No upcoming events at the moment.</p>
+      </div>
+    )
+  }
+
   return (
     <div className="grid md:grid-cols-3 gap-6">
-      {upcomingEvents.map((event) => (
+      {events.map((event) => (
         <Card key={event.id} className="overflow-hidden hover:shadow-md transition-shadow">
           <div className="relative h-48">
-            <img src={event.image || "/placeholder.svg"} alt={event.title} className="w-full h-full object-cover" />
+            <img 
+              src={event.image || "/placeholder.svg"} 
+              alt={event.title} 
+              className="w-full h-full object-cover"
+            />
             <Badge className="absolute top-3 right-3 bg-blue-900">{event.type}</Badge>
           </div>
           <CardHeader className="pb-2">

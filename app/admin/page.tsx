@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Upload, Image as ImageIcon } from "lucide-react"
+import { Upload } from "lucide-react"
 import {
   Select,
   SelectContent,
@@ -18,8 +18,25 @@ import {
 } from "@/components/ui/select"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { toast } from "sonner"
+import { handleError, validateEventForm, validateImageFile, AppError, ErrorType } from "@/lib/utils/error-handling"
+import { uploadImage } from "@/app/utils/cloudinary"
 
-const initialFormData = {
+interface EventFormData {
+  title: string;
+  date: string;
+  time: string;
+  location: string;
+  type: string;
+  image: string;
+  description: string;
+  status: 'upcoming' | 'past';
+  fees: {
+    ieee: number;
+    nonIeee: number;
+  };
+}
+
+const initialFormData: EventFormData = {
   title: "",
   date: "",
   time: "",
@@ -36,7 +53,7 @@ const initialFormData = {
 
 export default function AdminPage() {
   const router = useRouter()
-  const [formData, setFormData] = useState(initialFormData)
+  const [formData, setFormData] = useState<EventFormData>(initialFormData)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
@@ -59,35 +76,21 @@ export default function AdminPage() {
   }
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
+    try {
+      const file = e.target.files?.[0]
+      if (!file) return
+
+      // This will throw an error if validation fails
+      validateImageFile(file)
+
       setImageFile(file)
       const reader = new FileReader()
       reader.onloadend = () => {
         setImagePreview(reader.result as string)
       }
       reader.readAsDataURL(file)
-    }
-  }
-
-  const uploadImage = async (file: File): Promise<string> => {
-    const formData = new FormData()
-    formData.append('file', file)
-    formData.append('upload_preset', 'MTTCUSAT') // Create this preset in your Cloudinary dashboard
-
-    try {
-      const response = await fetch(
-        `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
-        {
-          method: 'POST',
-          body: formData,
-        }
-      )
-      const data = await response.json()
-      return data.secure_url
     } catch (error) {
-      console.error('Error uploading image:', error)
-      throw error
+      handleError(error)
     }
   }
 
@@ -100,9 +103,18 @@ export default function AdminPage() {
     setIsSubmitting(true)
 
     try {
+      // Validate form data
+      validateEventForm(formData)
+
       let imageUrl = formData.image
       if (imageFile) {
-        imageUrl = await uploadImage(imageFile)
+        try {
+          imageUrl = await uploadImage(imageFile)
+        } catch (error) {
+          handleError(error)
+          setIsSubmitting(false)
+          return
+        }
       }
 
       const eventsRef = collection(db, "events")
@@ -116,9 +128,9 @@ export default function AdminPage() {
       setFormData(initialFormData)
       setImageFile(null)
       setImagePreview(null)
+      router.refresh()
     } catch (error) {
-      console.error("Error adding event:", error)
-      toast.error("Failed to add event. Please try again.")
+      handleError(error)
     } finally {
       setIsSubmitting(false)
     }
@@ -148,7 +160,7 @@ export default function AdminPage() {
                 <Label htmlFor="type">Event Type</Label>
                 <Select
                   value={formData.type}
-                  onValueChange={(value) => handleSelectChange("type", value)}
+                  onValueChange={(value: string) => handleSelectChange("type", value)}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select event type" />
@@ -202,7 +214,7 @@ export default function AdminPage() {
                 <Label htmlFor="status">Status</Label>
                 <Select
                   value={formData.status}
-                  onValueChange={(value) => handleSelectChange("status", value)}
+                  onValueChange={(value: 'upcoming' | 'past') => handleSelectChange("status", value)}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select status" />
@@ -229,7 +241,7 @@ export default function AdminPage() {
                   <div className="flex items-center gap-4">
                     <Button
                       type="button"
-                      variant="outline"
+                      className="border border-input bg-background hover:bg-accent hover:text-accent-foreground"
                       onClick={() => document.getElementById('image-upload')?.click()}
                     >
                       <Upload className="h-4 w-4 mr-2" />
@@ -293,7 +305,7 @@ export default function AdminPage() {
             <div className="flex justify-end space-x-4">
               <Button
                 type="button"
-                variant="outline"
+                className="border border-input bg-background hover:bg-accent hover:text-accent-foreground"
                 onClick={() => {
                   setFormData(initialFormData)
                   setImageFile(null)
