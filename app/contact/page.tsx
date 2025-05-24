@@ -1,15 +1,39 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import { Mail, Phone, MapPin, Send, CheckCircle } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { useState } from "react";
+import { Mail, Phone, MapPin, Send, CheckCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+
+// Fix for default marker icon not loading in some bundlers
+L.Icon.Default.mergeOptions({
+  iconUrl: "https://unpkg.com/leaflet@1.9.3/dist/images/marker-icon.png",
+  iconRetinaUrl:
+    "https://unpkg.com/leaflet@1.9.3/dist/images/marker-icon-2x.png",
+  shadowUrl: "https://unpkg.com/leaflet@1.9.3/dist/images/marker-shadow.png",
+});
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -17,23 +41,25 @@ export default function ContactPage() {
     email: "",
     subject: "",
     message: "",
-  })
+  });
 
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isSuccess, setIsSuccess] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
-  }
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
   const handleSelectChange = (value: string) => {
-    setFormData((prev) => ({ ...prev, subject: value }))
-  }
+    setFormData((prev) => ({ ...prev, subject: value }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSubmitting(true)
+    e.preventDefault();
+    setIsSubmitting(true);
 
     // Simulate API call
     try {
@@ -41,36 +67,39 @@ export default function ContactPage() {
       // await fetch('/api/contact', { method: 'POST', body: JSON.stringify(formData) });
 
       // Simulate network delay
-      await new Promise((resolve) => setTimeout(resolve, 1500))
+      await new Promise((resolve) => setTimeout(resolve, 1500));
 
-      setIsSuccess(true)
+      setIsSuccess(true);
       setFormData({
         name: "",
         email: "",
         subject: "",
         message: "",
-      })
+      });
     } catch (error) {
-      console.error("Submission failed:", error)
-      alert("Message sending failed. Please try again.")
+      console.error("Submission failed:", error);
+      alert("Message sending failed. Please try again.");
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   return (
     <div className="container mx-auto px-4 md:px-6 py-12">
       <div className="text-center mb-12">
         <h1 className="text-4xl font-bold text-blue-900 mb-4">Contact Us</h1>
         <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-          Have questions or want to get in touch with IEEE MTT-S CUSAT SB? We'd love to hear from you!
+          Have questions or want to get in touch with us? We'd love to hear from
+          you!
         </p>
       </div>
 
       <div className="grid md:grid-cols-2 gap-12 max-w-5xl mx-auto">
         {/* Contact Information */}
         <div>
-          <h2 className="text-2xl font-bold mb-6 text-blue-900">Get in Touch</h2>
+          <h2 className="text-2xl font-bold mb-6 text-blue-900">
+            Get in Touch
+          </h2>
 
           <div className="space-y-6">
             <Card>
@@ -80,10 +109,15 @@ export default function ContactPage() {
                     <Mail className="h-6 w-6 text-blue-900" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-blue-900">Email</h3>
+                    <h3 className="text-lg font-semibold text-blue-900">
+                      Email
+                    </h3>
                     <p className="text-gray-700 mb-1">General Inquiries:</p>
-                    <a href="mailto:ieee.mtts.cusat@gmail.com" className="text-blue-900 hover:underline">
-                      ieee.mtts.cusat@gmail.com
+                    <a
+                      href="mailto:mttscusatofficial@gmail.com"
+                      className="text-blue-900 hover:underline"
+                    >
+                      mttscusatofficial@gmail.com
                     </a>
                   </div>
                 </div>
@@ -97,14 +131,22 @@ export default function ContactPage() {
                     <Phone className="h-6 w-6 text-blue-900" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-blue-900">Phone</h3>
-                    <p className="text-gray-700 mb-1">Faculty Advisor:</p>
-                    <a href="tel:+919876543210" className="text-blue-900 hover:underline">
-                      +91 98765 43210
+                    <h3 className="text-lg font-semibold text-blue-900">
+                      Phone
+                    </h3>
+                    <p className="text-gray-700 mb-1">Chairperson:</p>
+                    <a
+                      href="tel:+918078404116"
+                      className="text-blue-900 hover:underline"
+                    >
+                      +91 8078 404 116
                     </a>
-                    <p className="text-gray-700 mt-2 mb-1">Student Chairperson:</p>
-                    <a href="tel:+919876543211" className="text-blue-900 hover:underline">
-                      +91 98765 43211
+                    <p className="text-gray-700 mt-2 mb-1">Vice Chairperson:</p>
+                    <a
+                      href="tel:+919142020962"
+                      className="text-blue-900 hover:underline"
+                    >
+                      +91 9142 020 962
                     </a>
                   </div>
                 </div>
@@ -118,10 +160,10 @@ export default function ContactPage() {
                     <MapPin className="h-6 w-6 text-blue-900" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-blue-900">Address</h3>
+                    <h3 className="text-lg font-semibold text-blue-900">
+                      Address
+                    </h3>
                     <p className="text-gray-700">
-                      Department of Electronics
-                      <br />
                       Cochin University of Science and Technology
                       <br />
                       Kalamassery, Kochi - 682022
@@ -135,10 +177,22 @@ export default function ContactPage() {
           </div>
 
           <div className="mt-8">
-            <h3 className="text-xl font-semibold mb-4 text-blue-900">Follow Us</h3>
+            <h3 className="text-xl font-semibold mb-4 text-blue-900">
+              Follow Us
+            </h3>
             <div className="flex space-x-4">
-              <Button asChild variant="outline" size="icon" className="rounded-full">
-                <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+              <Button
+                asChild
+                variant="outline"
+                size="icon"
+                className="rounded-full"
+              >
+                <a
+                  href="https://instagram.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Instagram"
+                >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="24"
@@ -151,50 +205,31 @@ export default function ContactPage() {
                     strokeLinejoin="round"
                     className="h-5 w-5"
                   >
-                    <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
-                  </svg>
-                </a>
-              </Button>
-              <Button asChild variant="outline" size="icon" className="rounded-full">
-                <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" aria-label="Twitter">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="h-5 w-5"
-                  >
-                    <path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"></path>
-                  </svg>
-                </a>
-              </Button>
-              <Button asChild variant="outline" size="icon" className="rounded-full">
-                <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="h-5 w-5"
-                  >
-                    <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                    <rect
+                      x="2"
+                      y="2"
+                      width="20"
+                      height="20"
+                      rx="5"
+                      ry="5"
+                    ></rect>
                     <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
                     <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
                   </svg>
                 </a>
               </Button>
-              <Button asChild variant="outline" size="icon" className="rounded-full">
-                <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+              <Button
+                asChild
+                variant="outline"
+                size="icon"
+                className="rounded-full"
+              >
+                <a
+                  href="https://linkedin.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="LinkedIn"
+                >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="24"
@@ -219,7 +254,9 @@ export default function ContactPage() {
 
         {/* Contact Form */}
         <div>
-          <h2 className="text-2xl font-bold mb-6 text-blue-900">Send Us a Message</h2>
+          <h2 className="text-2xl font-bold mb-6 text-blue-900">
+            Send Us a Message
+          </h2>
 
           {isSuccess ? (
             <Card className="border-green-200 shadow-md">
@@ -227,16 +264,24 @@ export default function ContactPage() {
                 <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
                   <CheckCircle className="h-10 w-10 text-green-600" />
                 </div>
-                <CardTitle className="text-2xl text-green-800">Message Sent!</CardTitle>
-                <CardDescription className="text-green-700">Thank you for reaching out to us</CardDescription>
+                <CardTitle className="text-2xl text-green-800">
+                  Message Sent!
+                </CardTitle>
+                <CardDescription className="text-green-700">
+                  Thank you for reaching out to us
+                </CardDescription>
               </CardHeader>
               <CardContent className="pt-6">
                 <p className="text-gray-700 text-center">
-                  We have received your message and will get back to you as soon as possible.
+                  We have received your message and will get back to you as soon
+                  as possible.
                 </p>
               </CardContent>
               <CardFooter className="flex justify-center">
-                <Button onClick={() => setIsSuccess(false)} className="bg-blue-900 hover:bg-blue-800">
+                <Button
+                  onClick={() => setIsSuccess(false)}
+                  className="bg-blue-900 hover:bg-blue-800"
+                >
                   Send Another Message
                 </Button>
               </CardFooter>
@@ -279,7 +324,11 @@ export default function ContactPage() {
                   <Label htmlFor="subject">
                     Subject <span className="text-red-500">*</span>
                   </Label>
-                  <Select value={formData.subject} onValueChange={handleSelectChange} required>
+                  <Select
+                    value={formData.subject}
+                    onValueChange={handleSelectChange}
+                    required
+                  >
                     <SelectTrigger id="subject">
                       <SelectValue placeholder="Select a subject" />
                     </SelectTrigger>
@@ -287,7 +336,9 @@ export default function ContactPage() {
                       <SelectItem value="general">General Inquiry</SelectItem>
                       <SelectItem value="membership">Membership</SelectItem>
                       <SelectItem value="events">Events</SelectItem>
-                      <SelectItem value="collaboration">Collaboration</SelectItem>
+                      <SelectItem value="collaboration">
+                        Collaboration
+                      </SelectItem>
                       <SelectItem value="feedback">Feedback</SelectItem>
                       <SelectItem value="other">Other</SelectItem>
                     </SelectContent>
@@ -310,7 +361,11 @@ export default function ContactPage() {
                 </div>
               </div>
 
-              <Button type="submit" className="w-full bg-blue-900 hover:bg-blue-800" disabled={isSubmitting}>
+              <Button
+                type="submit"
+                className="w-full bg-blue-900 hover:bg-blue-800"
+                disabled={isSubmitting}
+              >
                 {isSubmitting ? (
                   <span className="flex items-center">
                     <svg
@@ -347,15 +402,25 @@ export default function ContactPage() {
       </div>
 
       {/* Map Section */}
-      <div className="mt-16">
-        <h2 className="text-2xl font-bold mb-6 text-blue-900 text-center">Find Us</h2>
-        <div className="h-96 bg-gray-200 rounded-lg overflow-hidden">
-          {/* In a real application, you would embed a Google Map here */}
-          <div className="w-full h-full flex items-center justify-center bg-gray-100">
-            <p className="text-gray-500">Map will be displayed here</p>
-          </div>
+      <div className="mt-12">
+        <h2 className="text-2xl font-bold mb-4 text-blue-900">Our Location</h2>
+        <div className="h-[400px] rounded-lg overflow-hidden">
+          <MapContainer
+            center={[10.0485, 76.3274]}
+            zoom={16}
+            scrollWheelZoom={false}
+            className="h-full w-full z-0"
+          >
+            <TileLayer
+              attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            />
+            <Marker position={[10.0482921,76.330898]}>
+              <Popup>Cochin University of Science and Technology (CUSAT)</Popup>
+            </Marker>
+          </MapContainer>
         </div>
       </div>
     </div>
-  )
+  );
 }

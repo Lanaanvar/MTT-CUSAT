@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge"
 
 // upcoming events data
 const upcomingEvents = [
+
    {
       id: "1",
     title: "Inaguration and Talk Session",
