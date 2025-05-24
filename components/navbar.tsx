@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation"
 import { Menu, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import { useAuth } from "@/lib/context/auth-context"
 
 const navItems = [
   { name: "Home", href: "/" },
@@ -19,6 +20,7 @@ const navItems = [
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const pathname = usePathname()
+  const { user, signOut } = useAuth()
 
   return (
     <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
@@ -48,11 +50,24 @@ export default function Navbar() {
             ))}
           </nav>
 
-          {/* Join Button */}
-          <div className="hidden md:block">
-            <Button asChild className="bg-blue-900 hover:bg-blue-800">
-              <Link href="/join">Join Us</Link>
-            </Button>
+          {/* Auth Buttons */}
+          <div className="hidden md:flex items-center space-x-2">
+            {user ? (
+              <>
+                {user.isAdmin && (
+                  <Button asChild variant="outline">
+                    <Link href="/admin">Admin Panel</Link>
+                  </Button>
+                )}
+                <Button variant="ghost" onClick={signOut}>
+                  Sign Out
+                </Button>
+              </>
+            ) : (
+              <Button asChild className="bg-blue-900 hover:bg-blue-800">
+                <Link href="/login">Log in</Link>
+              </Button>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -88,10 +103,23 @@ export default function Navbar() {
                 {item.name}
               </Link>
             ))}
-            <div className="pt-2">
-              <Button asChild className="w-full bg-blue-900 hover:bg-blue-800">
-                <Link href="/join">Join Us</Link>
-              </Button>
+            <div className="pt-2 space-y-2">
+              {user ? (
+                <>
+                  {user.isAdmin && (
+                    <Button asChild variant="outline" className="w-full">
+                      <Link href="/admin">Admin Panel</Link>
+                    </Button>
+                  )}
+                  <Button variant="ghost" onClick={signOut} className="w-full">
+                    Sign Out
+                  </Button>
+                </>
+              ) : (
+                <Button asChild className="w-full bg-blue-900 hover:bg-blue-800">
+                  <Link href="/login">Log in</Link>
+                </Button>
+              )}
             </div>
           </div>
         </div>
