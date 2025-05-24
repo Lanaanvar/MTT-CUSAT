@@ -10,7 +10,7 @@ import { useAuth } from "@/lib/context/auth-context"
 
 const navItems = [
   { name: "Home", href: "/" },
-  { name: "About", href: "/about" },
+  // { name: "About", href: "/about" },
   { name: "Events", href: "/events" },
   { name: "Blog", href: "/blog" },
   { name: "Members", href: "/members" },
@@ -28,8 +28,8 @@ export default function Navbar() {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center">
-            <span className="text-xl font-bold text-blue-900">IEEE MTT-S</span>
-            <span className="ml-1 text-lg font-medium text-gray-600">CUSAT SB</span>
+            <span className="text-xl font-bold text-blue-900">MTT-S</span>
+            <span className="ml-1 text-lg font-medium text-gray-600">CUSAT</span>
           </Link>
 
           {/* Desktop Navigation */}

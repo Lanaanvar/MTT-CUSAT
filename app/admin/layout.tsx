@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { Calendar, Settings, FileText } from "lucide-react"
+import { Calendar, FileText } from "lucide-react"
 
 const tabs = [
   { name: "Events", href: "/admin" },
@@ -42,14 +42,7 @@ export default function AdminLayout({
                 <FileText className="h-4 w-4" />
                 <span>Blogs</span>
               </Link>
-              <Link
-                href="/admin/settings"
-                className="flex items-center space-x-2 hover:text-blue-200"
-              >
-                <Settings className="h-4 w-4" />
-                <span>Settings</span>
-              </Link>
-            </nav>
+             </nav>
           </div>
         </div>
       </header>
