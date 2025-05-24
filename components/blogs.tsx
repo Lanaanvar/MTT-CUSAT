@@ -1,64 +1,90 @@
-import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+'use client';
 
-// Dummy data (can be fetched from CMS or API)
-const blogPosts = [
-  {
-    id: 1,
-    title: "Advancements in 5G Technology",
-    date: "May 11, 2023",
-    image: "/placeholder.svg?height=200&width=400&text=Blog+Image+1",
-    excerpt: "Exploring the latest developments in 5G technology and its applications in modern communication systems.",
-    slug: "post-1",
-  },
-  {
-    id: 2,
-    title: "AI in Everyday Life",
-    date: "May 12, 2023",
-    image: "/placeholder.svg?height=200&width=400&text=Blog+Image+2",
-    excerpt: "Discover how artificial intelligence is being used in consumer apps, home automation, and healthcare.",
-    slug: "post-2",
-  },
-  {
-    id: 3,
-    title: "Sustainable Tech Innovations",
-    date: "May 13, 2023",
-    image: "/placeholder.svg?height=200&width=400&text=Blog+Image+3",
-    excerpt: "An overview of how technology is driving sustainable development and greener alternatives in industries.",
-    slug: "post-3",
-  },
-];
+import { useState, useEffect } from 'react';
+import { collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
+import { db } from '../app/firebase/config';
+import { Blog } from '@/app/types';
+import Link from 'next/link';
+import { format } from 'date-fns';
 
 export default function LatestBlogs() {
+  const [blogs, setBlogs] = useState<Blog[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchLatestBlogs();
+  }, []);
+
+  const fetchLatestBlogs = async () => {
+    try {
+      const blogsQuery = query(
+        collection(db, 'blogs'),
+        where('isPublished', '==', true),
+        orderBy('createdAt', 'desc'),
+        limit(3)
+      );
+      const querySnapshot = await getDocs(blogsQuery);
+      const blogsData = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        createdAt: doc.data().createdAt?.toDate(),
+        updatedAt: doc.data().updatedAt?.toDate(),
+      })) as Blog[];
+      setBlogs(blogsData);
+    } catch (error) {
+      console.error('Error fetching blogs:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="animate-pulse">
+            <div className="bg-gray-200 h-48 rounded-lg mb-4"></div>
+            <div className="h-6 bg-gray-200 rounded w-3/4 mb-2"></div>
+            <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (blogs.length === 0) {
+    return (
+      <div className="text-center text-gray-500">
+        No blogs published yet.
+      </div>
+    );
+  }
+
   return (
-    <section className="py-16 bg-white">
-      <div className="container mx-auto px-4 md:px-6">
-        <div className="grid md:grid-cols-3 gap-8">
-          {blogPosts.map((post) => (
-            <div
-              key={post.id}
-              className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow"
-            >
-              <img
-                src={post.image}
-                alt={post.title}
-                className="w-full h-48 object-cover"
-              />
-              <div className="p-6">
-                <p className="text-sm text-blue-600 mb-2">{post.date}</p>
-                <h3 className="text-xl font-bold mb-2 text-gray-900">{post.title}</h3>
-                <p className="text-gray-700 mb-4 line-clamp-3">{post.excerpt}</p>
-                <Link
-                  href={`/blog/${post.slug}`}
-                  className="text-blue-900 font-medium hover:underline inline-flex items-center"
-                >
-                  Read More <ArrowRight className="ml-1 h-4 w-4" />
-                </Link>
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      {blogs.map((blog) => (
+        <Link key={blog.id} href={`/blog/${blog.slug}`}>
+          <article className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
+            <img
+              src={blog.coverImage}
+              alt={blog.title}
+              className="w-full h-48 object-cover"
+            />
+            <div className="p-6">
+              <h3 className="text-xl font-semibold mb-2 line-clamp-2">
+                {blog.title}
+              </h3>
+              <p className="text-gray-600 mb-4 line-clamp-3">
+                {blog.excerpt}
+              </p>
+              <div className="flex items-center justify-between text-sm text-gray-500">
+                <span>{blog.author}</span>
+                <time>{format(blog.createdAt, 'MMM dd, yyyy')}</time>
               </div>
             </div>
-          ))}
-        </div>
-      </div>
-    </section>
+          </article>
+        </Link>
+      ))}
+    </div>
   );
 }
