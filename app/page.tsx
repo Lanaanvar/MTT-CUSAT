@@ -37,7 +37,7 @@ export default function Home() {
                 variant="outline"
                 className="border-white text-blue-900 hover:bg-blue-50"
               >
-                <Link href="/join">Join MTT-S</Link>
+                <Link href="https://www.ieee.org/membership-catalog/productdetail/showProductDetailPage.html?product=MEMMTT017&searchResults=Y">Join MTT-S</Link>
               </Button>
             </div>
           </div>
@@ -64,13 +64,13 @@ export default function Home() {
                 wireless communications through workshops, seminars, and
                 hands-on projects.
               </p>
-              <Button
+              {/* <Button
                 asChild
                 variant="outline"
                 className="text-blue-900 border-blue-900 hover:bg-blue-50"
               >
                 <Link href="/about">Learn More About Us</Link>
-              </Button>
+              </Button> */}
             </div>
             <div className="bg-blue-50 p-8 rounded-lg">
               <h3 className="text-2xl font-bold mb-6 text-blue-900">

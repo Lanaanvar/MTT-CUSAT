@@ -11,10 +11,10 @@ interface TeamMember {
 
 const TeamModal = ({ isVisible, onMouseLeave }: { isVisible: boolean; onMouseLeave: () => void }) => {
   const teamMembers: TeamMember[] = [
-    { name: "Revathy", linkedin: "https://linkedin.com/in/revathy" },
+    { name: "Revathy", linkedin: "http://www.linkedin.com/in/revuz" },
     { name: "Ronaq", linkedin: "https://linkedin.com/in/ronaq" },
-    { name: "Dheeraj", linkedin: "https://linkedin.com/in/dheeraj" },
-    { name: "Lena", linkedin: "https://linkedin.com/in/lena" },
+    { name: "Dheeraj", linkedin: "https://linkedin.com/" },
+    { name: "Lena", linkedin: "https://www.linkedin.com/in/lana-anvar" },
   ];
 
   if (!isVisible) return null;
@@ -151,7 +151,7 @@ export default function Footer() {
 
         <div className="border-t border-gray-800 mt-10 pt-6 flex flex-col md:flex-row justify-between items-center">
           <p className="text-gray-400 text-sm">
-            © {new Date().getFullYear()} IEEE MTT-S CUSAT SB. All rights reserved.
+            © {new Date().getFullYear()} IEEE MTT-S. All rights reserved.
           </p>
           <div className="mt-4 md:mt-0 flex items-center gap-6">
             <div className="relative">
@@ -175,11 +175,6 @@ export default function Footer() {
               <li>
                 <Link href="/terms" className="text-gray-400 hover:text-white transition-colors">
                   Terms of Service
-                </Link>
-              </li>
-              <li>
-                <Link href="/credits" className="text-gray-400 hover:text-white transition-colors">
-                  Credits
                 </Link>
               </li>
             </ul>

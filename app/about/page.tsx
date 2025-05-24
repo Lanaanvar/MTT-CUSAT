@@ -204,7 +204,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Affiliations */}
+      Affiliations
       <section>
         <h2 className="text-3xl font-bold mb-8 text-blue-900 text-center">Our Affiliations</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
