@@ -10,7 +10,7 @@ import { useAuth } from "@/lib/context/auth-context"
 
 const navItems = [
   { name: "Home", href: "/" },
-  { name: "About", href: "/about" },
+  // { name: "About", href: "/about" },
   { name: "Events", href: "/events" },
   { name: "Blog", href: "/blog" },
   { name: "Members", href: "/members" },

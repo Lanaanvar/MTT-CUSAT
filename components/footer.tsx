@@ -13,11 +13,11 @@ export default function Footer() {
               Advancing microwave theory, techniques, and applications through innovation and education.
             </p>
             <div className="flex space-x-4">
-              <Link href="https://instagram.com" className="text-gray-400 hover:text-white transition-colors">
+              <Link href="https://www.instagram.com/ieeemttscusat" className="text-gray-400 hover:text-white transition-colors">
                 <Instagram className="h-5 w-5" />
                 <span className="sr-only">Instagram</span>
               </Link>
-              <Link href="https://linkedin.com" className="text-gray-400 hover:text-white transition-colors">
+              <Link href="https://www.linkedin.com/in/mtts-cusat-0967a8367" className="text-gray-400 hover:text-white transition-colors">
                 <Linkedin className="h-5 w-5" />
                 <span className="sr-only">LinkedIn</span>
               </Link>
@@ -28,11 +28,11 @@ export default function Footer() {
           <div>
             <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
             <ul className="space-y-2">
-              <li>
+              {/* <li>
                 <Link href="/about" className="text-gray-400 hover:text-white transition-colors">
                   About Us
                 </Link>
-              </li>
+              </li> */}
               <li>
                 <Link href="/events" className="text-gray-400 hover:text-white transition-colors">
                   Events

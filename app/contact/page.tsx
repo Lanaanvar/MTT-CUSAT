@@ -188,7 +188,7 @@ export default function ContactPage() {
                 className="rounded-full"
               >
                 <a
-                  href="https://instagram.com"
+                  href="https://www.instagram.com/ieeemttscusat"
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Instagram"
@@ -225,7 +225,7 @@ export default function ContactPage() {
                 className="rounded-full"
               >
                 <a
-                  href="https://linkedin.com"
+                  href="https://www.linkedin.com/in/mtts-cusat-0967a8367"
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="LinkedIn"
