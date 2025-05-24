@@ -157,7 +157,7 @@ export default function Home() {
       </section>
 
       {/* Latest Blogs Section */}
-      <section className="py-16 bg-gray-50">
+      {/* <section className="py-16 bg-gray-50">
         <div className="container mx-auto px-4 md:px-6">
           <h2 className="text-3xl font-bold mb-10 text-center text-blue-900">
             Latest from Our Blog
@@ -173,7 +173,7 @@ export default function Home() {
             <Link href="/blog">Explore All Articles</Link>
           </Button>
         </div>
-      </section>
+      </section> */}
 
       {/* Join Us Section */}
       <section className="py-16 bg-blue-900 text-white">
@@ -188,7 +188,7 @@ export default function Home() {
             size="lg"
             className="bg-white text-blue-900 hover:bg-blue-50"
           >
-            <Link href="/join">Become a Member Today</Link>
+            <Link href="https://www.ieee.org/membership-catalog/productdetail/showProductDetailPage.html?product=MEMMTT017&searchResults=Y">Become a Member Today</Link>
           </Button>
         </div>
       </section>
