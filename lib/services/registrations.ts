@@ -55,12 +55,17 @@ export async function createRegistration(data: Omit<Registration, 'id'>): Promis
   try {
     // Immediately try to use Firestore with proper error handling
     try {
+      // Ensure collection name is correctly lowercase
       const registrationsRef = collection(db, 'registrations');
+      
+      // Add additional console logging to help debug
+      console.log('Attempting to add registration to Firestore...');
+      
       const docRef = await addDoc(registrationsRef, data);
-      console.log('Registration added to Firestore successfully');
+      console.log('Registration added to Firestore successfully with ID:', docRef.id);
       return docRef.id;
     } catch (firebaseError: any) {
-      console.error('Firebase registration error:', firebaseError);
+      console.error('Firebase registration error details:', firebaseError.code, firebaseError.message);
       
       // Check for specific Firebase errors
       if (firebaseError.code === 'permission-denied' || 
@@ -68,7 +73,9 @@ export async function createRegistration(data: Omit<Registration, 'id'>): Promis
           firebaseError.message?.includes('Client is offline')) {
         // These are common errors on mobile, fall back to local storage
         console.log('Using localStorage fallback due to Firebase permission error');
-        return saveRegistrationLocally(data);
+        const localId = saveRegistrationLocally(data);
+        console.log('Registration saved locally with ID:', localId);
+        return localId;
       }
       
       // For other errors, we still try local storage but rethrow

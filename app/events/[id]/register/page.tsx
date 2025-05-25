@@ -107,10 +107,12 @@ export default function RegisterPage({ params }: { params: Promise<{ id: string 
         amount: registrationAmount
       };
 
+      console.log("Submitting registration data:", JSON.stringify(registrationData));
+      
       // Try to create registration with better error handling
       try {
-        await createRegistration(registrationData);
-        console.log('Registration completed successfully');
+        const registrationId = await createRegistration(registrationData);
+        console.log('Registration completed successfully with ID:', registrationId);
         
         // Show success message based on payment status
         if (registrationAmount > 0) {
@@ -125,6 +127,25 @@ export default function RegisterPage({ params }: { params: Promise<{ id: string 
         }, 500);
       } catch (firebaseError: any) {
         console.error("Firebase registration error:", firebaseError);
+        console.error("Error code:", firebaseError.code);
+        console.error("Error message:", firebaseError.message);
+        
+        // Always save locally as a backup
+        const fallbackId = `registration-${Date.now()}`;
+        const fallbackData = { 
+          id: fallbackId, 
+          ...registrationData
+        };
+        
+        try {
+          const existingData = localStorage.getItem('offline_registrations');
+          const offlineRegistrations = existingData ? JSON.parse(existingData) : [];
+          offlineRegistrations.push(fallbackData);
+          localStorage.setItem('offline_registrations', JSON.stringify(offlineRegistrations));
+          console.log("Registration saved locally as fallback");
+        } catch (storageError) {
+          console.error("Failed to save locally:", storageError);
+        }
         
         // Check if this might be due to permission errors on mobile
         if (firebaseError.code === 'permission-denied' || offlineMode) {

@@ -1,6 +1,6 @@
 import { initializeApp, getApps, FirebaseApp } from 'firebase/app'
 import { getFirestore, enableIndexedDbPersistence, Firestore } from 'firebase/firestore'
-import { getAuth, Auth } from 'firebase/auth'
+import { getAuth, Auth, signInAnonymously } from 'firebase/auth'
 import { configureDomainAuth } from './firebaseConfig'
 
 const firebaseConfig = {
@@ -25,6 +25,17 @@ try {
   app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
   db = getFirestore(app);
   auth = getAuth(app);
+  
+  // Sign in anonymously for access to Firestore
+  if (typeof window !== 'undefined') {
+    signInAnonymously(auth)
+      .then(() => {
+        console.log("Signed in anonymously for Firestore access");
+      })
+      .catch((error) => {
+        console.error("Anonymous auth error:", error);
+      });
+  }
   
   // Configure domain authorization for auth
   if (typeof window !== 'undefined') {
