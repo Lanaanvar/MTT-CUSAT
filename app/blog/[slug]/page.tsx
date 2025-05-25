@@ -1,29 +1,29 @@
 'use client';
 
-import { useState, useEffect, use } from 'react';
+import { useState, useEffect } from 'react';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '@/app/firebase/config';
 import { Blog } from '@/app/types';
 import { format } from 'date-fns';
 import { useRouter } from 'next/navigation';
 
-export default function BlogPost({ params }: { params: Promise<{ slug: string }> }) {
-  const resolvedParams = use(params);
+export default function BlogPost({ params }: { params: { slug: string } }) {
+  const slug = params.slug;
   const [blog, setBlog] = useState<Blog | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
-    if (resolvedParams.slug) {
+    if (slug) {
       fetchBlog();
     }
-  }, [resolvedParams.slug]);
+  }, [slug]);
 
   const fetchBlog = async () => {
     try {
       const blogsQuery = query(
         collection(db, 'blogs'),
-        where('slug', '==', resolvedParams.slug),
+        where('slug', '==', slug),
         where('isPublished', '==', true)
       );
       const querySnapshot = await getDocs(blogsQuery);

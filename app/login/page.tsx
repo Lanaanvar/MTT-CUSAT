@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
@@ -13,7 +13,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { toast } from 'sonner';
 import Cookies from 'js-cookie';
 
-export default function LoginPage() {
+export default function LoginPage({
+  searchParams,
+}: {
+  searchParams: { redirect?: string };
+}) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -24,8 +28,7 @@ export default function LoginPage() {
   });
   
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const redirectPath = searchParams.get('redirect') || '/';
+  const redirectPath = searchParams.redirect || '/';
 
   const validateForm = () => {
     let isValid = true;

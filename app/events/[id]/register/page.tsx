@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, use, useEffect } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
@@ -25,8 +25,8 @@ type MembershipType = "ieee" | "non-ieee"
 type RegistrationStatus = "pending" | "approved" | "rejected"
 type PaymentStatus = "pending" | "completed"
 
-export default function RegisterPage({ params }: { params: Promise<{ id: string }> }) {
-  const resolvedParams = use(params);
+export default function RegisterPage({ params }: { params: { id: string } }) {
+  const eventId = params.id;
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [event, setEvent] = useState<any>(null)
@@ -58,7 +58,7 @@ export default function RegisterPage({ params }: { params: Promise<{ id: string 
   useEffect(() => {
     async function loadEvent() {
       try {
-        const eventData = await getEventById(resolvedParams.id);
+        const eventData = await getEventById(eventId);
         setEvent(eventData);
       } catch (error) {
         console.error("Error loading event:", error);
@@ -68,7 +68,7 @@ export default function RegisterPage({ params }: { params: Promise<{ id: string 
     }
     
     loadEvent();
-  }, [resolvedParams.id]);
+  }, [eventId]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -87,7 +87,7 @@ export default function RegisterPage({ params }: { params: Promise<{ id: string 
 
     try {
       // Get event details to include in registration
-      const eventData = event || await getEventById(resolvedParams.id)
+      const eventData = event || await getEventById(eventId)
       if (!eventData) {
         toast.error("Event not found")
         return
@@ -99,7 +99,7 @@ export default function RegisterPage({ params }: { params: Promise<{ id: string 
       // Prepare registration data with proper type assertions
       const registrationData: Omit<Registration, 'id'> = {
         ...formData,
-        eventId: resolvedParams.id,
+        eventId: eventId,
         eventTitle: eventData.title,
         registrationDate: new Date().toISOString(),
         status: registrationAmount === 0 ? "approved" as RegistrationStatus : "pending" as RegistrationStatus,
@@ -123,7 +123,7 @@ export default function RegisterPage({ params }: { params: Promise<{ id: string 
         
         // Redirect to success page with delay to ensure localStorage writes complete
         setTimeout(() => {
-          router.replace(`/events/${resolvedParams.id}/register/success`);
+          router.replace(`/events/${eventId}/register/success`);
         }, 500);
       } catch (firebaseError: any) {
         console.error("Firebase registration error:", firebaseError);
@@ -154,7 +154,7 @@ export default function RegisterPage({ params }: { params: Promise<{ id: string 
           
           // Still redirect to success page after a delay
           setTimeout(() => {
-            router.replace(`/events/${resolvedParams.id}/register/success`);
+            router.replace(`/events/${eventId}/register/success`);
           }, 500);
         } else {
           // For other errors, show error message but don't redirect
@@ -171,7 +171,7 @@ export default function RegisterPage({ params }: { params: Promise<{ id: string 
         const fallbackData = { 
           id: fallbackId, 
           ...formData,
-          eventId: resolvedParams.id,
+          eventId: eventId,
           eventTitle: event?.title || "Event",
           registrationDate: new Date().toISOString(),
           status: "pending" as RegistrationStatus,
@@ -189,7 +189,7 @@ export default function RegisterPage({ params }: { params: Promise<{ id: string 
         
         // Redirect after a delay to ensure localStorage is written
         setTimeout(() => {
-          router.replace(`/events/${resolvedParams.id}/register/success`);
+          router.replace(`/events/${eventId}/register/success`);
         }, 500);
       } catch (storageError) {
         console.error("Failed to store registration locally:", storageError);
@@ -204,7 +204,7 @@ export default function RegisterPage({ params }: { params: Promise<{ id: string 
     <div className="container mx-auto px-4 py-6 md:py-8">
       <div className="mb-4 md:mb-6">
         <Button variant="outline" asChild className="mb-2">
-          <Link href={`/events/${resolvedParams.id}`}>
+          <Link href={`/events/${eventId}`}>
             <ArrowLeft className="mr-2 h-4 w-4" /> Back to Event
           </Link>
         </Button>
@@ -381,7 +381,7 @@ export default function RegisterPage({ params }: { params: Promise<{ id: string 
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => router.push(`/events/${resolvedParams.id}`)}
+                onClick={() => router.push(`/events/${eventId}`)}
                 className="w-full sm:w-auto"
               >
                 Cancel
