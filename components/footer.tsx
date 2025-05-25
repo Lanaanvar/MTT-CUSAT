@@ -27,7 +27,7 @@ const TeamModal = ({
   const teamMembers: TeamMember[] = [
     { name: "Revathy", linkedin: "http://www.linkedin.com/in/revuz" },
     { name: "Ronaq", linkedin: "https://linkedin.com/in/ronaq" },
-    { name: "Dheeraj", linkedin: "https://linkedin.com/" },
+    { name: "Dheeraj", linkedin: "http://linkedin.com/in/dheerajjagadeesh" },
     { name: "Lana", linkedin: "https://www.linkedin.com/in/lana-anvar" },
   ];
 
