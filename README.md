@@ -62,6 +62,7 @@ Official website for the IEEE Microwave Theory and Techniques Society (MTT-S) CU
 - [x] Credits Section       
 - [x] Backend Integration (Firebase) 
 - [ ] Animations(Hover, onclick, onscroll etc..) 
+- [ ] SEO
 
 > Tick off items as features get implemented.
 

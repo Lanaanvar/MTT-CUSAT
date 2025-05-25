@@ -204,14 +204,23 @@ export default function Footer() {
             <div className="relative md:mr-6">
               <span
                 className="text-gray-400 text-sm cursor-pointer hover:text-white transition-colors"
+                onClick={() => setShowTeamModal((prev) => !prev)}
                 onMouseEnter={() => setShowTeamModal(true)}
+                onMouseLeave={() => setShowTeamModal(false)}
               >
                 Made with ❤️ by <span className="underline">Us!</span>
               </span>
-              <TeamModal
-                isVisible={showTeamModal}
-                onMouseLeave={() => setShowTeamModal(false)}
-              />
+              {showTeamModal && (
+                <div
+                  className="relative z-50"
+                  onClick={() => setShowTeamModal(false)} // closes modal on click for mobile
+                >
+                  <TeamModal
+                    isVisible={true}
+                    onMouseLeave={() => setShowTeamModal(false)}
+                  />
+                </div>
+              )}
             </div>
           </div>
         </div>
