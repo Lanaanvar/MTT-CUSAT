@@ -48,19 +48,19 @@ Official website for the IEEE Microwave Theory and Techniques Society (MTT-S) CU
 
 ## ✅ Feature Checklist
 
-- [ ] Authentication(For blogs and event creation)
-- [ ] Homepage
+- [x] Authentication(For blogs and event creation)
+- [x] Homepage
 - [x] Menu (Navbar)         
 - [x] Footer                
 - [x] Events Page           
 - [x] └── Event Register
-- [ ] └── Event Creation (Authenticated Users Only)
+- [x] └── Event Creation (Authenticated Users Only)
 - [x] Blog Section 
-- [ ] Blog Post Creation(Authenticated Users Only)         
+- [x] Blog Post Creation(Authenticated Users Only)         
 - [x] Execom Members Page   
 - [x] └── Member Cards      
-- [ ] Credits Section       
-- [ ] Backend Integration 
+- [x] Credits Section       
+- [x] Backend Integration (Firebase) 
 - [ ] Animations(Hover, onclick, onscroll etc..) 
 
 > Tick off items as features get implemented.
