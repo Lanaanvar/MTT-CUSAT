@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, use } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import { ArrowLeft, Calendar, Clock, MapPin, Users } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -8,15 +8,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { getEventById, type Event } from "@/lib/services/events"
 
-export default function EventPage({ params }: { params: Promise<{ id: string }> }) {
-  const resolvedParams = use(params);
+export default function EventPage({ params }: { params: { id: string } }) {
+  const eventId = params.id;
   const [event, setEvent] = useState<Event | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const fetchEvent = async () => {
       try {
-        const eventData = await getEventById(resolvedParams.id)
+        const eventData = await getEventById(eventId)
         setEvent(eventData)
       } catch (error) {
         console.error("Error fetching event:", error)
@@ -26,7 +26,7 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
     }
 
     fetchEvent()
-  }, [resolvedParams.id])
+  }, [eventId])
 
   if (loading) {
     return (

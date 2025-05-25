@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
@@ -13,14 +13,57 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { toast } from 'sonner';
 import Cookies from 'js-cookie';
 
-export default function LoginPage() {
+export default function LoginPage({
+  searchParams,
+}: {
+  searchParams: { redirect?: string };
+}) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({
+    email: '',
+    password: '',
+    general: ''
+  });
+  
   const router = useRouter();
+  const redirectPath = searchParams.redirect || '/';
+
+  const validateForm = () => {
+    let isValid = true;
+    const newErrors = {
+      email: '',
+      password: '',
+      general: ''
+    };
+
+    // Email validation
+    if (!email) {
+      newErrors.email = 'Email is required';
+      isValid = false;
+    } else if (!/\S+@\S+\.\S+/.test(email)) {
+      newErrors.email = 'Please enter a valid email';
+      isValid = false;
+    }
+
+    // Password validation
+    if (!password) {
+      newErrors.password = 'Password is required';
+      isValid = false;
+    }
+
+    setErrors(newErrors);
+    return isValid;
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
+    
     setLoading(true);
 
     try {
@@ -46,41 +89,72 @@ export default function LoginPage() {
       const token = await userCredential.user.getIdToken();
       Cookies.set('session', token, { expires: 7 }); // Expires in 7 days
 
-      if (userData?.isAdmin) {
+      toast.success('Logged in successfully!');
+      
+      // Navigate based on user role and redirect parameter
+      if (userData?.isAdmin && redirectPath.startsWith('/admin')) {
+        router.push(redirectPath);
+      } else if (userData?.isAdmin) {
         router.push('/admin');
       } else {
-        router.push('/');
+        router.push(redirectPath !== '/login' ? redirectPath : '/');
       }
       
-      toast.success('Logged in successfully!');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Login error:', error);
-      toast.error('Failed to log in. Please check your credentials.');
+      if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
+        setErrors({...errors, general: 'Invalid email or password'});
+        toast.error('Invalid email or password');
+      } else if (error.code === 'auth/invalid-email') {
+        setErrors({...errors, email: 'Please enter a valid email'});
+        toast.error('Please enter a valid email');
+      } else if (error.code === 'auth/too-many-requests') {
+        setErrors({...errors, general: 'Too many failed login attempts. Please try again later.'});
+        toast.error('Too many failed login attempts. Please try again later.');
+      } else {
+        setErrors({...errors, general: 'Failed to log in. Please try again.'});
+        toast.error('Failed to log in. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="container mx-auto px-4 py-12">
+    <div className="container mx-auto px-4 py-8 md:py-12">
       <div className="max-w-md mx-auto">
-        <Card>
-          <CardHeader>
-            <CardTitle>Log in</CardTitle>
-            <CardDescription>Enter your credentials to access your account</CardDescription>
+        <Card className="shadow-lg">
+          <CardHeader className="space-y-1">
+            <CardTitle className="text-2xl font-bold text-center">Log in</CardTitle>
+            <CardDescription className="text-center">Enter your credentials to access your account</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleLogin} className="space-y-4">
+              {errors.general && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+                  <p className="text-red-600 text-sm">{errors.general}</p>
+                </div>
+              )}
+              {redirectPath.startsWith('/admin') && (
+                <div className="p-3 bg-blue-50 border border-blue-200 rounded-md">
+                  <p className="text-blue-600 text-sm">Login required to access admin area</p>
+                </div>
+              )}
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
                   id="email"
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    if (errors.email) setErrors({...errors, email: ''});
+                  }}
                   required
                   placeholder="Enter your email"
+                  className={errors.email ? "border-red-500" : ""}
                 />
+                {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
@@ -88,10 +162,15 @@ export default function LoginPage() {
                   id="password"
                   type="password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    if (errors.password) setErrors({...errors, password: ''});
+                  }}
                   required
                   placeholder="Enter your password"
+                  className={errors.password ? "border-red-500" : ""}
                 />
+                {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
               </div>
               <Button type="submit" className="w-full bg-blue-900 hover:bg-blue-800" disabled={loading}>
                 {loading ? 'Logging in...' : 'Log in'}
@@ -101,7 +180,7 @@ export default function LoginPage() {
           <CardFooter className="flex justify-center">
             <p className="text-sm text-gray-600">
               Don't have an account?{' '}
-              <Link href="/signup" className="text-blue-900 hover:underline">
+              <Link href="/signup" className="text-blue-900 hover:underline font-semibold">
                 Sign up
               </Link>
             </p>

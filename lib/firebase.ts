@@ -1,6 +1,7 @@
-import { initializeApp, getApps } from 'firebase/app'
-import { getFirestore } from 'firebase/firestore'
-import { getAuth } from 'firebase/auth'
+import { initializeApp, getApps, FirebaseApp } from 'firebase/app'
+import { getFirestore, enableIndexedDbPersistence, Firestore } from 'firebase/firestore'
+import { getAuth, Auth, signInAnonymously } from 'firebase/auth'
+import { configureDomainAuth } from './firebaseConfig'
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -11,9 +12,53 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 }
 
-// Initialize Firebase
-const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0]
-const db = getFirestore(app)
-const auth = getAuth(app)
+// Initialize Firebase with fallback handling
+let app: FirebaseApp;
+let db: Firestore;
+let auth: Auth;
 
-export { db, auth } 
+// Check if browser is mobile
+const isMobile = typeof window !== 'undefined' ? 
+  /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) : false;
+
+try {
+  app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+  db = getFirestore(app);
+  auth = getAuth(app);
+  
+  // Sign in anonymously for access to Firestore
+  if (typeof window !== 'undefined') {
+    signInAnonymously(auth)
+      .then(() => {
+        console.log("Signed in anonymously for Firestore access");
+      })
+      .catch((error) => {
+        console.error("Anonymous auth error:", error);
+      });
+  }
+  
+  // Configure domain authorization for auth
+  if (typeof window !== 'undefined') {
+    configureDomainAuth();
+  }
+  
+  // Enable offline persistence for Firestore with error handling
+  if (typeof window !== 'undefined') {
+    // Only enable persistence in browser environment
+    enableIndexedDbPersistence(db)
+      .then(() => {
+        console.log("Persistence enabled");
+      })
+      .catch((err) => {
+        console.warn("Persistence could not be enabled:", err.code);
+      });
+  }
+} catch (error) {
+  console.error('Error initializing Firebase:', error);
+  // Attempt to initialize again if failed
+  if (!app) app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+  if (!db) db = getFirestore(app);
+  if (!auth) auth = getAuth(app);
+}
+
+export { db, auth, isMobile } 
