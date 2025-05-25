@@ -59,19 +59,33 @@ export default function RegisterPage({ params }: { params: Promise<{ id: string 
         return
       }
 
+      // Calculate registration amount
+      const registrationAmount = formData.membershipType === "ieee" ? event.fees?.ieee || 0 : event.fees?.nonIeee || 0
+
       // Create registration
       await createRegistration({
         ...formData,
         eventId: resolvedParams.id,
         eventTitle: event.title,
         registrationDate: new Date().toISOString(),
-        status: "pending", // pending, approved, rejected
-        paymentStatus: "pending", // pending, completed
-        amount: formData.membershipType === "ieee" ? event.fees?.ieee || 0 : event.fees?.nonIeee || 0
+        status: registrationAmount === 0 ? "approved" : "pending", // Auto-approve only free events
+        paymentStatus: registrationAmount === 0 ? "completed" : "pending",
+        amount: registrationAmount
       })
 
-      toast.success("Registration submitted successfully!")
-      router.push(`/events/${resolvedParams.id}`)
+      if (registrationAmount === 0) {
+        // For free events, redirect to success page
+        router.replace(`/events/${resolvedParams.id}/register/success`)
+      } else {
+        // For paid events, show pending message and redirect to event page
+        toast.success(
+          <div className="space-y-2">
+            <p>Registration submitted successfully!</p>
+            <p className="text-sm">Your registration is pending approval. You will be notified once it's approved.</p>
+          </div>
+        )
+        router.replace(`/events/${resolvedParams.id}`)
+      }
     } catch (error) {
       console.error("Error submitting registration:", error)
       toast.error("Failed to submit registration. Please try again.")

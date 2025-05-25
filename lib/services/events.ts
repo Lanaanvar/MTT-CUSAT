@@ -16,6 +16,9 @@ export interface Event {
     nonIeee: number
   }
   createdAt: string
+  postRegistrationMessage?: string
+  postRegistrationLink?: string
+  postRegistrationButtonText?: string
 }
 
 function formatDate(dateStr: string): string {
