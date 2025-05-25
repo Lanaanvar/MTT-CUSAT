@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils"
 import { Calendar, FileText } from "lucide-react"
 
 const tabs = [
-  { name: "Events", href: "/admin" },
+  { name: "Events", href: "/admin/" },
   { name: "Registrations", href: "/admin/registrations" },
   { name: "Blogs", href: "/admin/blogs" },
 ]
@@ -29,7 +29,7 @@ export default function AdminLayout({
             </Link>
             <nav className="flex items-center space-x-4">
               <Link
-                href="/admin"
+                href="/events"
                 className="flex items-center space-x-2 hover:text-blue-200"
               >
                 <Calendar className="h-4 w-4" />

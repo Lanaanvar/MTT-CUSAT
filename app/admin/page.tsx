@@ -34,6 +34,9 @@ interface EventFormData {
     ieee: number;
     nonIeee: number;
   };
+  postRegistrationMessage: string;
+  postRegistrationLink: string;
+  postRegistrationButtonText: string;
 }
 
 const initialFormData: EventFormData = {
@@ -48,7 +51,10 @@ const initialFormData: EventFormData = {
   fees: {
     ieee: 0,
     nonIeee: 0
-  }
+  },
+  postRegistrationMessage: "",
+  postRegistrationLink: "",
+  postRegistrationButtonText: ""
 }
 
 export default function AdminPage() {
@@ -298,8 +304,42 @@ export default function AdminPage() {
                 value={formData.description}
                 onChange={handleChange}
                 required
-                rows={4}
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="postRegistrationMessage">Post-Registration Message</Label>
+              <Textarea
+                id="postRegistrationMessage"
+                name="postRegistrationMessage"
+                value={formData.postRegistrationMessage}
+                onChange={handleChange}
+                placeholder="Enter message to show after successful registration (e.g., instructions, links, etc.)"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label htmlFor="postRegistrationLink">Post-Registration Link (Optional)</Label>
+                <Input
+                  id="postRegistrationLink"
+                  name="postRegistrationLink"
+                  value={formData.postRegistrationLink}
+                  onChange={handleChange}
+                  placeholder="Enter a link to show after registration"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="postRegistrationButtonText">Link Button Text</Label>
+                <Input
+                  id="postRegistrationButtonText"
+                  name="postRegistrationButtonText"
+                  value={formData.postRegistrationButtonText}
+                  onChange={handleChange}
+                  placeholder="Enter button text for the link (e.g., 'Join WhatsApp Group')"
+                />
+              </div>
             </div>
 
             <div className="flex justify-end space-x-4">
