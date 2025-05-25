@@ -11,9 +11,21 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 }
 
-// Initialize Firebase
-const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0]
-const db = getFirestore(app)
-const auth = getAuth(app)
+// Initialize Firebase with fallback handling
+let app;
+let db;
+let auth;
+
+try {
+  app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+  db = getFirestore(app);
+  auth = getAuth(app);
+} catch (error) {
+  console.error('Error initializing Firebase:', error);
+  // Attempt to initialize again if failed
+  if (!app) app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+  if (!db) db = getFirestore(app);
+  if (!auth) auth = getAuth(app);
+}
 
 export { db, auth } 

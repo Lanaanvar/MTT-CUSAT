@@ -1,11 +1,11 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { getAuth, signOut as firebaseSignOut, onAuthStateChanged } from 'firebase/auth';
+import { getAuth, signOut as firebaseSignOut, onAuthStateChanged, onIdTokenChanged } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import Cookies from 'js-cookie';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 
 interface User {
   uid: string;
@@ -25,19 +25,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const pathname = usePathname();
 
+  // Set up token refresh
   useEffect(() => {
     const auth = getAuth();
-    return onAuthStateChanged(auth, async (firebaseUser) => {
+    
+    // Handle auth state changes
+    const unsubscribeAuthState = onAuthStateChanged(auth, async (firebaseUser) => {
       try {
         if (firebaseUser) {
           // Get additional user data from Firestore
           const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
           const userData = userDoc.data();
-          
-          // Update session token
-          const token = await firebaseUser.getIdToken();
-          Cookies.set('session', token, { expires: 7 });
           
           setUser({
             uid: firebaseUser.uid,
@@ -46,17 +46,50 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           });
         } else {
           setUser(null);
-          Cookies.remove('session');
+          // If on a protected route and no user, clear cookie and redirect
+          if (pathname?.startsWith('/admin')) {
+            Cookies.remove('session');
+            router.push('/login');
+          }
         }
       } catch (error) {
         console.error('Auth state change error:', error);
         setUser(null);
-        Cookies.remove('session');
       } finally {
         setLoading(false);
       }
     });
-  }, [router]);
+
+    // Handle token changes (refresh)
+    const unsubscribeIdToken = onIdTokenChanged(auth, async (user) => {
+      if (user) {
+        // Get the new token and update the cookie
+        const token = await user.getIdToken();
+        Cookies.set('session', token, { expires: 7 });
+      } else {
+        Cookies.remove('session');
+      }
+    });
+
+    // Set up periodic token refresh (every 55 minutes - Firebase tokens last 60 minutes)
+    const refreshInterval = setInterval(async () => {
+      const currentUser = auth.currentUser;
+      if (currentUser) {
+        try {
+          const token = await currentUser.getIdToken(true); // Force refresh
+          Cookies.set('session', token, { expires: 7 });
+        } catch (error) {
+          console.error('Token refresh error:', error);
+        }
+      }
+    }, 55 * 60 * 1000);
+
+    return () => {
+      unsubscribeAuthState();
+      unsubscribeIdToken();
+      clearInterval(refreshInterval);
+    };
+  }, [router, pathname]);
 
   const signOut = async () => {
     try {
