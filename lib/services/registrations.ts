@@ -53,27 +53,32 @@ const fallbackRegistration: Registration = {
 
 export async function createRegistration(data: Omit<Registration, 'id'>): Promise<string> {
   try {
-    // Handle mobile Safari issue where some browsers have restrictions on Firestore
-    if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
-      try {
-        const registrationsRef = collection(db, 'registrations');
-        const docRef = await addDoc(registrationsRef, data);
-        return docRef.id;
-      } catch (mobileError) {
-        console.error('Mobile Firestore error:', mobileError);
-        // Fallback to localStorage for mobile
-        return saveRegistrationLocally(data);
-      }
-    } else {
-      // Normal flow for desktop
+    // Immediately try to use Firestore with proper error handling
+    try {
       const registrationsRef = collection(db, 'registrations');
       const docRef = await addDoc(registrationsRef, data);
+      console.log('Registration added to Firestore successfully');
       return docRef.id;
+    } catch (firebaseError: any) {
+      console.error('Firebase registration error:', firebaseError);
+      
+      // Check for specific Firebase errors
+      if (firebaseError.code === 'permission-denied' || 
+          firebaseError.code === 'unavailable' ||
+          firebaseError.message?.includes('Client is offline')) {
+        // These are common errors on mobile, fall back to local storage
+        console.log('Using localStorage fallback due to Firebase permission error');
+        return saveRegistrationLocally(data);
+      }
+      
+      // For other errors, we still try local storage but rethrow
+      const localId = saveRegistrationLocally(data);
+      throw firebaseError;
     }
   } catch (error) {
     console.error('Error creating registration:', error);
     
-    // Store registration in localStorage as fallback
+    // Final fallback - try to save locally no matter what
     return saveRegistrationLocally(data);
   }
 }
@@ -102,6 +107,7 @@ function saveRegistrationLocally(data: Omit<Registration, 'id'>): string {
     // Write back with error handling
     try {
       localStorage.setItem('offline_registrations', JSON.stringify(offlineRegistrations));
+      console.log('Registration stored in localStorage successfully');
     } catch (writeError) {
       console.error('Error writing to localStorage:', writeError);
       // Try with just this registration if full array is too big
@@ -112,7 +118,6 @@ function saveRegistrationLocally(data: Omit<Registration, 'id'>): string {
       }
     }
     
-    console.log('Registration stored locally due to Firestore error');
     return fallbackId;
   } catch (storageError) {
     console.error('Failed to store registration locally:', storageError);

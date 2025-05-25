@@ -107,36 +107,38 @@ export default function RegisterPage({ params }: { params: Promise<{ id: string 
         amount: registrationAmount
       };
 
-      // Try to create registration with fallback for mobile
+      // Try to create registration with better error handling
       try {
         await createRegistration(registrationData);
-      } catch (firebaseError) {
+        console.log('Registration completed successfully');
+        
+        // Show success message based on payment status
+        if (registrationAmount > 0) {
+          toast.info("Your registration is pending approval. You will be notified once it's approved.");
+        } else {
+          toast.success("Registration successful!");
+        }
+        
+        // Redirect to success page with delay to ensure localStorage writes complete
+        setTimeout(() => {
+          router.replace(`/events/${resolvedParams.id}/register/success`);
+        }, 500);
+      } catch (firebaseError: any) {
         console.error("Firebase registration error:", firebaseError);
         
-        // Fallback to localStorage on any Firebase error
-        const fallbackId = `registration-${Date.now()}`;
-        const fallbackData = { id: fallbackId, ...registrationData };
-        const existingData = localStorage.getItem('offline_registrations');
-        const offlineRegistrations = existingData ? JSON.parse(existingData) : [];
-        offlineRegistrations.push(fallbackData);
-        localStorage.setItem('offline_registrations', JSON.stringify(offlineRegistrations));
-        
-        // We'll consider this a success since we saved it locally
-        console.log('Registration stored locally');
-        setOfflineMode(true);
-      }
-
-      // Always redirect to success page
-      // Add small delay to ensure localStorage is written
-      setTimeout(() => {
-        router.replace(`/events/${resolvedParams.id}/register/success`);
-      }, 300);
-      
-      // Show additional toast for paid events
-      if (registrationAmount > 0) {
-        toast.info("Your registration is pending approval. You will be notified once it's approved.");
-      } else {
-        toast.success("Registration successful!");
+        // Check if this might be due to permission errors on mobile
+        if (firebaseError.code === 'permission-denied' || offlineMode) {
+          setOfflineMode(true);
+          toast.info("Your registration is saved in offline mode due to network limitations. It will sync when you return online.");
+          
+          // Still redirect to success page after a delay
+          setTimeout(() => {
+            router.replace(`/events/${resolvedParams.id}/register/success`);
+          }, 500);
+        } else {
+          // For other errors, show error message but don't redirect
+          toast.error("There was a problem with your registration. Please try again later.");
+        }
       }
     } catch (error) {
       console.error("Error submitting registration:", error);
@@ -164,10 +166,10 @@ export default function RegisterPage({ params }: { params: Promise<{ id: string 
         setOfflineMode(true);
         toast.success("Registration saved locally. It will be synchronized when you're back online.");
         
-        // Redirect after a small delay to ensure localStorage is written
+        // Redirect after a delay to ensure localStorage is written
         setTimeout(() => {
           router.replace(`/events/${resolvedParams.id}/register/success`);
-        }, 300);
+        }, 500);
       } catch (storageError) {
         console.error("Failed to store registration locally:", storageError);
         toast.error("Failed to submit registration. Please try again or check your connection.");
