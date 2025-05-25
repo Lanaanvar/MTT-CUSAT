@@ -1,20 +1,34 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { Facebook, Twitter, Instagram, Linkedin, Mail, MapPin, Phone } from "lucide-react"
-import { useState } from "react"
+import Link from "next/link";
+import {
+  Facebook,
+  Twitter,
+  Instagram,
+  Linkedin,
+  Mail,
+  MapPin,
+  Phone,
+} from "lucide-react";
+import { useState } from "react";
 
 interface TeamMember {
   name: string;
   linkedin: string;
 }
 
-const TeamModal = ({ isVisible, onMouseLeave }: { isVisible: boolean; onMouseLeave: () => void }) => {
+const TeamModal = ({
+  isVisible,
+  onMouseLeave,
+}: {
+  isVisible: boolean;
+  onMouseLeave: () => void;
+}) => {
   const teamMembers: TeamMember[] = [
-    { name: "Revathy", linkedin: "https://linkedin.com/in/revathy" },
+    { name: "Revathy", linkedin: "http://www.linkedin.com/in/revuz" },
     { name: "Ronaq", linkedin: "https://linkedin.com/in/ronaq" },
-    { name: "Dheeraj", linkedin: "https://linkedin.com/in/dheeraj" },
-    { name: "Lena", linkedin: "https://linkedin.com/in/lena" },
+    { name: "Dheeraj", linkedin: "https://linkedin.com/" },
+    { name: "Lana", linkedin: "https://www.linkedin.com/in/lana-anvar" },
   ];
 
   if (!isVisible) return null;
@@ -28,7 +42,11 @@ const TeamModal = ({ isVisible, onMouseLeave }: { isVisible: boolean; onMouseLea
         {teamMembers.map((member) => (
           <div key={member.name} className="flex items-center gap-2">
             <span>{member.name}</span>
-            <Link href={member.linkedin} target="_blank" rel="noopener noreferrer">
+            <Link
+              href={member.linkedin}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               <Linkedin className="h-4 w-4 text-blue-600" />
             </Link>
           </div>
@@ -49,14 +67,21 @@ export default function Footer() {
           <div>
             <h3 className="text-xl font-bold mb-4">IEEE MTT-S CUSAT SB</h3>
             <p className="text-gray-400 mb-4">
-              Advancing microwave theory, techniques, and applications through innovation and education.
+              Advancing microwave theory, techniques, and applications through
+              innovation and education.
             </p>
             <div className="flex space-x-4">
-              <Link href="https://www.instagram.com/ieeemttscusat" className="text-gray-400 hover:text-white transition-colors">
+              <Link
+                href="https://www.instagram.com/ieeemttscusat"
+                className="text-gray-400 hover:text-white transition-colors"
+              >
                 <Instagram className="h-5 w-5" />
                 <span className="sr-only">Instagram</span>
               </Link>
-              <Link href="https://www.linkedin.com/in/mtts-cusat-0967a8367" className="text-gray-400 hover:text-white transition-colors">
+              <Link
+                href="https://www.linkedin.com/in/mtts-cusat-0967a8367"
+                className="text-gray-400 hover:text-white transition-colors"
+              >
                 <Linkedin className="h-5 w-5" />
                 <span className="sr-only">LinkedIn</span>
               </Link>
@@ -73,22 +98,34 @@ export default function Footer() {
                 </Link>
               </li> */}
               <li>
-                <Link href="/events" className="text-gray-400 hover:text-white transition-colors">
+                <Link
+                  href="/events"
+                  className="text-gray-400 hover:text-white transition-colors"
+                >
                   Events
                 </Link>
               </li>
               <li>
-                <Link href="/blog" className="text-gray-400 hover:text-white transition-colors">
+                <Link
+                  href="/blog"
+                  className="text-gray-400 hover:text-white transition-colors"
+                >
                   Blog
                 </Link>
               </li>
               <li>
-                <Link href="/members" className="text-gray-400 hover:text-white transition-colors">
+                <Link
+                  href="/members"
+                  className="text-gray-400 hover:text-white transition-colors"
+                >
                   Members
                 </Link>
               </li>
               <li>
-                <Link href="/contact" className="text-gray-400 hover:text-white transition-colors">
+                <Link
+                  href="/contact"
+                  className="text-gray-400 hover:text-white transition-colors"
+                >
                   Contact
                 </Link>
               </li>
@@ -100,12 +137,18 @@ export default function Footer() {
             <h3 className="text-lg font-semibold mb-4">Resources</h3>
             <ul className="space-y-2">
               <li>
-                <Link href="https://www.ieee.org/" className="text-gray-400 hover:text-white transition-colors">
+                <Link
+                  href="https://www.ieee.org/"
+                  className="text-gray-400 hover:text-white transition-colors"
+                >
                   IEEE
                 </Link>
               </li>
               <li>
-                <Link href="https://mtt.org/" className="text-gray-400 hover:text-white transition-colors">
+                <Link
+                  href="https://mtt.org/"
+                  className="text-gray-400 hover:text-white transition-colors"
+                >
                   IEEE MTT-S
                 </Link>
               </li>
@@ -127,7 +170,8 @@ export default function Footer() {
               <li className="flex items-start">
                 <MapPin className="h-5 w-5 text-gray-400 mr-2 mt-0.5" />
                 <span className="text-gray-400">
-                  Cochin University of Science and Technology, Kalamassery, Kochi, Kerala, India
+                  Cochin University of Science and Technology, Kalamassery,
+                  Kochi, Kerala, India
                 </span>
               </li>
               <li className="flex items-center">
@@ -141,7 +185,10 @@ export default function Footer() {
               </li>
               <li className="flex items-center">
                 <Phone className="h-5 w-5 text-gray-400 mr-2" />
-                <Link href="tel:+918078404116" className="text-gray-400 hover:text-white transition-colors">
+                <Link
+                  href="tel:+918078404116"
+                  className="text-gray-400 hover:text-white transition-colors"
+                >
                   +91 8078 404 116
                 </Link>
               </li>
@@ -151,41 +198,24 @@ export default function Footer() {
 
         <div className="border-t border-gray-800 mt-10 pt-6 flex flex-col md:flex-row justify-between items-center">
           <p className="text-gray-400 text-sm">
-            © {new Date().getFullYear()} IEEE MTT-S CUSAT SB. All rights reserved.
+            © {new Date().getFullYear()} IEEE MTT-S. All rights reserved.
           </p>
           <div className="mt-4 md:mt-0 flex items-center gap-6">
-            <div className="relative">
-              <span 
+            <div className="relative md:mr-6">
+              <span
                 className="text-gray-400 text-sm cursor-pointer hover:text-white transition-colors"
                 onMouseEnter={() => setShowTeamModal(true)}
               >
                 Made with ❤️ by <span className="underline">Us!</span>
               </span>
-              <TeamModal 
-                isVisible={showTeamModal} 
-                onMouseLeave={() => setShowTeamModal(false)} 
+              <TeamModal
+                isVisible={showTeamModal}
+                onMouseLeave={() => setShowTeamModal(false)}
               />
             </div>
-            <ul className="flex space-x-6 text-sm">
-              <li>
-                <Link href="/privacy" className="text-gray-400 hover:text-white transition-colors">
-                  Privacy Policy
-                </Link>
-              </li>
-              <li>
-                <Link href="/terms" className="text-gray-400 hover:text-white transition-colors">
-                  Terms of Service
-                </Link>
-              </li>
-              <li>
-                <Link href="/credits" className="text-gray-400 hover:text-white transition-colors">
-                  Credits
-                </Link>
-              </li>
-            </ul>
           </div>
         </div>
       </div>
     </footer>
-  )
+  );
 }

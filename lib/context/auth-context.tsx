@@ -47,7 +47,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         } else {
           setUser(null);
           Cookies.remove('session');
-          router.push('/login');
         }
       } catch (error) {
         console.error('Auth state change error:', error);

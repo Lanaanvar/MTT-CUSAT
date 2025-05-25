@@ -2,7 +2,7 @@
 
 import type React from "react";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Mail, Phone, MapPin, Send, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,16 +23,16 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
-import L from "leaflet";
-import "leaflet/dist/leaflet.css";
+import dynamic from "next/dynamic";
 
-// Fix for default marker icon not loading in some bundlers
-L.Icon.Default.mergeOptions({
-  iconUrl: "https://unpkg.com/leaflet@1.9.3/dist/images/marker-icon.png",
-  iconRetinaUrl:
-    "https://unpkg.com/leaflet@1.9.3/dist/images/marker-icon-2x.png",
-  shadowUrl: "https://unpkg.com/leaflet@1.9.3/dist/images/marker-shadow.png",
+// Dynamically import the map component with no SSR
+const DynamicMap = dynamic(() => import("./MapComponent"), {
+  ssr: false,
+  loading: () => (
+    <div className="h-[400px] rounded-lg bg-gray-100 flex items-center justify-center">
+      <p className="text-gray-600">Loading map...</p>
+    </div>
+  ),
 });
 
 export default function ContactPage() {
@@ -405,20 +405,7 @@ export default function ContactPage() {
       <div className="mt-12">
         <h2 className="text-2xl font-bold mb-4 text-blue-900">Our Location</h2>
         <div className="h-[400px] rounded-lg overflow-hidden">
-          <MapContainer
-            center={[10.0485, 76.3274]}
-            zoom={16}
-            scrollWheelZoom={false}
-            className="h-full w-full z-0"
-          >
-            <TileLayer
-              attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            />
-            <Marker position={[10.0482921,76.330898]}>
-              <Popup>Cochin University of Science and Technology (CUSAT)</Popup>
-            </Marker>
-          </MapContainer>
+          <DynamicMap />
         </div>
       </div>
     </div>

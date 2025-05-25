@@ -11,7 +11,7 @@ import { Providers } from "./providers"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "IEEE MTT-S CUSAT SB",
+  title: "MTT-S CUSAT SB",
   description: "Official website of IEEE Microwave Theory and Techniques Society CUSAT Student Branch",
   icons: {
     icon: "/favicon.ico",

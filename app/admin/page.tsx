@@ -247,7 +247,7 @@ export default function AdminPage() {
                   <div className="flex items-center gap-4">
                     <Button
                       type="button"
-                      className="border border-input bg-background hover:bg-accent hover:text-accent-foreground"
+                      className="border border-input bg-background hover:bg-accent text-accent-foreground "
                       onClick={() => document.getElementById('image-upload')?.click()}
                     >
                       <Upload className="h-4 w-4 mr-2" />
@@ -345,7 +345,7 @@ export default function AdminPage() {
             <div className="flex justify-end space-x-4">
               <Button
                 type="button"
-                className="border border-input bg-background hover:bg-accent hover:text-accent-foreground"
+                className="border border-input bg-background hover:bg-accent text-accent-foreground"
                 onClick={() => {
                   setFormData(initialFormData)
                   setImageFile(null)
