@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Calendar, Users, BookOpen, Award } from "lucide-react";
+import { ArrowRight, Calendar, Users, BookOpen, Award, Clock, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import UpcomingEvents from "@/components/upcoming-events";
 import LatestBlogs from "@/components/blogs";
@@ -157,23 +157,21 @@ export default function Home() {
       </section>
 
       {/* Latest Blogs Section */}
-      {/* <section className="py-16 bg-gray-50">
+      <section className="py-16">
         <div className="container mx-auto px-4 md:px-6">
           <h2 className="text-3xl font-bold mb-10 text-center text-blue-900">
-            Latest from Our Blog
+            Latest Blog Posts
           </h2>
           <LatestBlogs />
+          <div className="text-center mt-10">
+            <Button asChild className="bg-blue-900 hover:bg-blue-800">
+              <Link href="/blog">
+                View All Posts <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
         </div>
-        <div className="text-center mt-10">
-          <Button
-            asChild
-            variant="outline"
-            className="border-blue-900 text-blue-900 hover:bg-blue-50"
-          >
-            <Link href="/blog">Explore All Articles</Link>
-          </Button>
-        </div>
-      </section> */}
+      </section>
 
       {/* Join Us Section */}
       <section className="py-16 bg-blue-900 text-white">

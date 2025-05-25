@@ -8,7 +8,8 @@ import {
   doc,
   getDoc,
   updateDoc,
-  deleteDoc
+  deleteDoc,
+  limit
 } from 'firebase/firestore'
 import { db } from '../firebase'
 
@@ -28,6 +29,7 @@ export interface Registration {
   status: 'pending' | 'approved' | 'rejected'
   paymentStatus: 'pending' | 'completed'
   amount: number
+  paymentScreenshot?: string
 }
 
 export async function createRegistration(data: Omit<Registration, 'id'>): Promise<string> {
@@ -125,6 +127,30 @@ export async function deleteRegistration(id: string): Promise<void> {
     await deleteDoc(registrationRef)
   } catch (error) {
     console.error('Error deleting registration:', error)
+    throw error
+  }
+}
+
+export const getRegistrationsByEventAndEmail = async (eventId: string) => {
+  try {
+    const registrationsRef = collection(db, 'registrations')
+    const q = query(
+      registrationsRef,
+      where('eventId', '==', eventId),
+      orderBy('registrationDate', 'desc'),
+      // Note: In a real app, you'd get the user's email from the session
+      // For now, we'll just get the most recent registration for this event
+      // as a simple way to identify the user's registration
+      limit(1)
+    )
+    const querySnapshot = await getDocs(q)
+    
+    return querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    })) as Registration[]
+  } catch (error) {
+    console.error('Error getting registrations:', error)
     throw error
   }
 } 
