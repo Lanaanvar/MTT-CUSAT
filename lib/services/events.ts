@@ -1,4 +1,15 @@
-import { collection, getDocs, query, where, orderBy, doc, getDoc } from 'firebase/firestore'
+import { 
+  collection, 
+  getDocs, 
+  query, 
+  where, 
+  orderBy, 
+  doc, 
+  getDoc, 
+  updateDoc, 
+  addDoc, 
+  deleteDoc
+} from 'firebase/firestore'
 import { db } from '../firebase'
 
 export interface Event {
@@ -173,5 +184,92 @@ export async function getEventById(id: string): Promise<Event | null> {
     
     // If no matching fallback event, find any fallback event
     return fallbackEvent || fallbackEvents[0] || null;
+  }
+}
+
+export async function updateEvent(
+  id: string,
+  data: Partial<Omit<Event, 'id'>>
+): Promise<void> {
+  try {
+    const eventRef = doc(db, 'events', id)
+    await updateDoc(eventRef, data)
+  } catch (error) {
+    console.error('Error updating event:', error)
+    
+    // Store event updates in localStorage as fallback
+    try {
+      const offlineData = localStorage.getItem('offline_event_updates');
+      const updates = offlineData ? JSON.parse(offlineData) : {};
+      
+      // Store the update request with timestamp
+      updates[id] = {
+        data,
+        timestamp: new Date().toISOString()
+      };
+      
+      localStorage.setItem('offline_event_updates', JSON.stringify(updates));
+      console.log('Event update stored locally due to Firestore error');
+    } catch (storageError) {
+      console.error('Failed to store event update locally:', storageError);
+    }
+    
+    throw new Error('Failed to update event. Changes saved locally for later sync.');
+  }
+}
+
+export async function createEvent(data: Omit<Event, 'id'>): Promise<string> {
+  try {
+    const eventsRef = collection(db, 'events');
+    const docRef = await addDoc(eventsRef, data);
+    return docRef.id;
+  } catch (error) {
+    console.error('Error creating event:', error);
+    
+    // Store event creation in localStorage as fallback
+    try {
+      const fallbackId = `event-${Date.now()}`;
+      const fallbackData = { id: fallbackId, ...data };
+      
+      // Store in localStorage
+      const offlineData = localStorage.getItem('offline_events');
+      const offlineEvents = offlineData ? JSON.parse(offlineData) : [];
+      offlineEvents.push(fallbackData);
+      localStorage.setItem('offline_events', JSON.stringify(offlineEvents));
+      
+      console.log('Event stored locally due to Firestore error');
+      return fallbackId;
+    } catch (storageError) {
+      console.error('Failed to store event locally:', storageError);
+      throw new Error('Failed to create event');
+    }
+  }
+}
+
+export async function deleteEvent(id: string): Promise<void> {
+  try {
+    const eventRef = doc(db, 'events', id);
+    await deleteDoc(eventRef);
+  } catch (error) {
+    console.error('Error deleting event:', error);
+    
+    // Record deletion request in localStorage as fallback
+    try {
+      const offlineData = localStorage.getItem('offline_event_deletions');
+      const deletions = offlineData ? JSON.parse(offlineData) : [];
+      
+      // Add to deletion queue
+      deletions.push({
+        id,
+        timestamp: new Date().toISOString()
+      });
+      
+      localStorage.setItem('offline_event_deletions', JSON.stringify(deletions));
+      console.log('Event deletion request stored locally due to Firestore error');
+    } catch (storageError) {
+      console.error('Failed to store event deletion locally:', storageError);
+    }
+    
+    throw new Error('Failed to delete event. Request saved locally for later sync.');
   }
 } 

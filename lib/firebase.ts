@@ -1,6 +1,6 @@
-import { initializeApp, getApps } from 'firebase/app'
-import { getFirestore } from 'firebase/firestore'
-import { getAuth } from 'firebase/auth'
+import { initializeApp, getApps, FirebaseApp } from 'firebase/app'
+import { getFirestore, enableIndexedDbPersistence, Firestore } from 'firebase/firestore'
+import { getAuth, Auth } from 'firebase/auth'
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -12,14 +12,30 @@ const firebaseConfig = {
 }
 
 // Initialize Firebase with fallback handling
-let app;
-let db;
-let auth;
+let app: FirebaseApp;
+let db: Firestore;
+let auth: Auth;
+
+// Check if browser is mobile
+const isMobile = typeof window !== 'undefined' ? 
+  /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) : false;
 
 try {
   app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
   db = getFirestore(app);
   auth = getAuth(app);
+  
+  // Enable offline persistence for Firestore with error handling
+  if (typeof window !== 'undefined') {
+    // Only enable persistence in browser environment
+    enableIndexedDbPersistence(db)
+      .then(() => {
+        console.log("Persistence enabled");
+      })
+      .catch((err) => {
+        console.warn("Persistence could not be enabled:", err.code);
+      });
+  }
 } catch (error) {
   console.error('Error initializing Firebase:', error);
   // Attempt to initialize again if failed
@@ -28,4 +44,4 @@ try {
   if (!auth) auth = getAuth(app);
 }
 
-export { db, auth } 
+export { db, auth, isMobile } 
