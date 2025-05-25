@@ -17,7 +17,7 @@ const execomMembers = {
       id: 1,
       name: "Dr. Anju Pradeep",
       position: "Branch Counceller",
-      image: "/Execom/Branch-Counceller.jpg",
+      image: "/Execom/Counceller.jpg",
       department: "Electronics Engineering",
       email: "anjupradeep@cusat.ac.in",
       // linkedin: "https://linkedin.com/in/rajeshkumar",
