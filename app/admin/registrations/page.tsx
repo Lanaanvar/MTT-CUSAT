@@ -244,20 +244,8 @@ export default function RegistrationsPage() {
                                       value={registration.status}
                                       onValueChange={(value) => handleStatusChange(registration.id, value)}
                                     >
-                                      <SelectTrigger>
-                                        <SelectValue>
-                                          <Badge
-                                            className={
-                                              registration.status === "approved"
-                                                ? "bg-green-600"
-                                                : registration.status === "rejected"
-                                                ? "bg-red-600"
-                                                : "bg-yellow-600"
-                                            }
-                                          >
-                                            {registration.status}
-                                          </Badge>
-                                        </SelectValue>
+                                      <SelectTrigger className="w-[130px]">
+                                        <SelectValue />
                                       </SelectTrigger>
                                       <SelectContent>
                                         <SelectItem value="pending">Pending</SelectItem>
@@ -267,30 +255,36 @@ export default function RegistrationsPage() {
                                     </Select>
                                   </TableCell>
                                   <TableCell>
-                                    <Select
-                                      value={registration.paymentStatus}
-                                      onValueChange={(value) =>
-                                        handlePaymentStatusChange(registration.id, value)
-                                      }
-                                    >
-                                      <SelectTrigger>
-                                        <SelectValue>
-                                          <Badge
-                                            className={
-                                              registration.paymentStatus === "completed"
-                                                ? "bg-green-600"
-                                                : "bg-yellow-600"
-                                            }
-                                          >
-                                            {registration.paymentStatus}
-                                          </Badge>
-                                        </SelectValue>
-                                      </SelectTrigger>
-                                      <SelectContent>
-                                        <SelectItem value="pending">Pending</SelectItem>
-                                        <SelectItem value="completed">Completed</SelectItem>
-                                      </SelectContent>
-                                    </Select>
+                                    <div className="space-y-2">
+                                      <Select
+                                        value={registration.paymentStatus}
+                                        onValueChange={(value) => handlePaymentStatusChange(registration.id, value)}
+                                      >
+                                        <SelectTrigger className="w-[130px]">
+                                          <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          <SelectItem value="pending">Pending</SelectItem>
+                                          <SelectItem value="completed">Completed</SelectItem>
+                                        </SelectContent>
+                                      </Select>
+                                      {registration.amount > 0 && (
+                                        <div className="flex items-center gap-2">
+                                          <Badge variant="outline">₹{registration.amount}</Badge>
+                                          {registration.paymentScreenshot && (
+                                            <Button
+                                              size="sm"
+                                              variant="outline"
+                                              asChild
+                                            >
+                                              <Link href={registration.paymentScreenshot} target="_blank" rel="noopener noreferrer">
+                                                View Receipt
+                                              </Link>
+                                            </Button>
+                                          )}
+                                        </div>
+                                      )}
+                                    </div>
                                   </TableCell>
                                   <TableCell>
                                     <Button

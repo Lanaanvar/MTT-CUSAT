@@ -73,18 +73,12 @@ export default function RegisterPage({ params }: { params: Promise<{ id: string 
         amount: registrationAmount
       })
 
-      if (registrationAmount === 0) {
-        // For free events, redirect to success page
-        router.replace(`/events/${resolvedParams.id}/register/success`)
-      } else {
-        // For paid events, show pending message and redirect to event page
-        toast.success(
-          <div className="space-y-2">
-            <p>Registration submitted successfully!</p>
-            <p className="text-sm">Your registration is pending approval. You will be notified once it's approved.</p>
-          </div>
-        )
-        router.replace(`/events/${resolvedParams.id}`)
+      // Always redirect to success page
+      router.replace(`/events/${resolvedParams.id}/register/success`)
+      
+      // Show additional toast for paid events
+      if (registrationAmount > 0) {
+        toast.info("Your registration is pending approval. You will be notified once it's approved.")
       }
     } catch (error) {
       console.error("Error submitting registration:", error)
