@@ -72,7 +72,7 @@ export default function Footer() {
             <h3 className="text-xl font-bold mb-4">IEEE MTT-S CUSAT SB</h3>
             <p className="text-gray-400 mb-4">
               Advancing microwave theory, techniques, and applications through
-              innovation and education.
+              innovation and education. | v1.0
             </p>
             <div className="flex space-x-4">
               <Link
