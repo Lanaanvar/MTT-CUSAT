@@ -19,9 +19,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { ChevronDown, ChevronRight } from "lucide-react"
+import { ChevronDown, ChevronRight, Plus, Edit, Users, Download } from "lucide-react"
 import { toast } from "sonner"
 import {
   getRegistrations,
@@ -30,6 +30,7 @@ import {
   type Registration
 } from "@/lib/services/registrations"
 import { getEvents, type Event } from "@/lib/services/events"
+import { convertRegistrationsToCSV, downloadCSV } from "../../lib/utils/csv"
 
 export default function RegistrationsPage() {
   const [events, setEvents] = useState<Event[]>([])
@@ -120,6 +121,15 @@ export default function RegistrationsPage() {
     }
   }
 
+  const handleExportCSV = (eventId: string, eventTitle: string) => {
+    const eventRegistrations = registrations.filter(reg => reg.eventId === eventId);
+    if (!eventRegistrations.length) return;
+    
+    const csvContent = convertRegistrationsToCSV(eventRegistrations);
+    const filename = `${eventTitle.toLowerCase().replace(/\s+/g, '-')}-registrations-${new Date().toISOString().split('T')[0]}.csv`;
+    downloadCSV(csvContent, filename);
+  };
+
   return (
     <div className="container mx-auto px-4 py-8 space-y-8">
       <Card>
@@ -140,11 +150,11 @@ export default function RegistrationsPage() {
             <div className="space-y-4">
               {events.map((event) => (
                 <div key={event.id} className="border rounded-lg overflow-hidden">
-                  <button
-                    onClick={() => handleEventClick(event.id)}
-                    className="w-full flex items-center justify-between p-4 hover:bg-gray-50"
-                  >
-                    <div className="flex items-center space-x-4">
+                  <div className="flex items-center justify-between p-4">
+                    <button
+                      onClick={() => handleEventClick(event.id)}
+                      className="flex items-center space-x-4 hover:text-blue-600"
+                    >
                       {selectedEventId === event.id ? (
                         <ChevronDown className="h-5 w-5 text-gray-500" />
                       ) : (
@@ -156,9 +166,20 @@ export default function RegistrationsPage() {
                           {event.date} • {event.location}
                         </p>
                       </div>
+                    </button>
+                    <div className="flex items-center gap-3">
+                      <Badge>{event.status}</Badge>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleExportCSV(event.id, event.title)}
+                        disabled={selectedEventId !== event.id || !registrations.length}
+                      >
+                        <Download className="mr-2 h-4 w-4" />
+                        Export CSV
+                      </Button>
                     </div>
-                    <Badge>{event.status}</Badge>
-                  </button>
+                  </div>
 
                   {selectedEventId === event.id && (
                     <div className="border-t">
