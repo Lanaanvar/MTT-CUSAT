@@ -16,41 +16,65 @@ const firebaseConfig = {
 let app: FirebaseApp;
 let db: Firestore;
 let auth: Auth;
+let isAnonymousAuthEnabled = false; // Default to false until we confirm it works
 
 // Basic mobile detection for UI adjustments only
 const isMobile = typeof window !== 'undefined' ? 
   /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) : false;
 
 try {
+  // Initialize Firebase app
   app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+  
+  // Initialize Firestore and Auth
   db = getFirestore(app);
   auth = getAuth(app);
-  
-  // Sign in anonymously for Firestore access
-  if (typeof window !== 'undefined') {
-    signInAnonymously(auth)
-      .then(() => {
-        console.log("Signed in anonymously for Firestore access");
-      })
-      .catch((error) => {
-        console.error("Anonymous auth error:", error);
-      });
-  }
   
   // Configure domain authorization
   if (typeof window !== 'undefined') {
     configureDomainAuth();
   }
   
-  // Enable offline persistence for Firestore
+  // Try to enable persistence BEFORE any other Firestore operations
   if (typeof window !== 'undefined') {
-    enableIndexedDbPersistence(db)
-      .then(() => {
-        console.log("Persistence enabled");
-      })
-      .catch((err) => {
-        console.warn("Persistence could not be enabled:", err.code);
+    try {
+      // Only try to enable persistence if we're in a browser environment
+      enableIndexedDbPersistence(db).catch((err) => {
+        if (err.code === 'failed-precondition') {
+          console.warn("Persistence unavailable - multiple tabs open");
+        } else if (err.code === 'unimplemented') {
+          console.warn("Persistence unavailable - browser not supported");
+        } else {
+          console.warn("Persistence error:", err);
+        }
       });
+    } catch (persistenceError) {
+      console.warn("Could not enable persistence:", persistenceError);
+    }
+  }
+  
+  // Anonymous authentication - moved after persistence setup
+  if (typeof window !== 'undefined') {
+    // Don't use async IIFE which can cause timing issues
+    signInAnonymously(auth).then(() => {
+      console.log("Signed in anonymously for Firestore access");
+      isAnonymousAuthEnabled = true;
+    }).catch((error) => {
+      console.error("Anonymous auth error:", error);
+      
+      // Check for admin-restricted-operation error
+      if (error.code === 'auth/admin-restricted-operation') {
+        console.warn("Anonymous authentication is disabled in Firebase console.");
+        console.warn("To fix this error, go to Firebase console > Authentication > Sign-in method");
+        console.warn("and enable Anonymous authentication provider.");
+        isAnonymousAuthEnabled = false;
+        
+        // Show a more user-friendly message in the console
+        console.info("The app will continue to work with limited functionality.");
+        console.info("Some features may require you to sign in.");
+      }
+      // Don't retry immediately - this can cause rate limiting
+    });
   }
 } catch (error) {
   console.error('Error initializing Firebase:', error);
@@ -60,4 +84,4 @@ try {
   if (!auth) auth = getAuth(app);
 }
 
-export { db, auth, isMobile } 
+export { db, auth, isMobile, isAnonymousAuthEnabled } 

@@ -11,7 +11,8 @@ import {
   deleteDoc,
   limit
 } from 'firebase/firestore'
-import { db } from '../firebase'
+import { db, auth, isAnonymousAuthEnabled } from '../firebase'
+import { signInAnonymously } from 'firebase/auth'
 
 export interface Registration {
   id: string
@@ -34,12 +35,40 @@ export interface Registration {
 
 export async function createRegistration(data: Omit<Registration, 'id'>): Promise<string> {
   try {
-    // Simple, direct approach - just add to Firestore
+    // Add to Firestore directly - don't try to authenticate here
+    // The Firestore rules are set to allow unauthenticated registration
     const registrationsRef = collection(db, 'registrations');
     console.log('Adding registration to Firestore...');
-    const docRef = await addDoc(registrationsRef, data);
-    console.log('Registration added with ID:', docRef.id);
-    return docRef.id;
+    
+    try {
+      const docRef = await addDoc(registrationsRef, data);
+      console.log('Registration added with ID:', docRef.id);
+      return docRef.id;
+    } catch (error: any) {
+      console.error('Error in first registration attempt:', error);
+      
+      // If we get a permission error, try a direct approach without auth
+      if (error.code === 'permission-denied') {
+        console.log('Permission denied, trying direct approach...');
+        
+        // Try again with a direct approach
+        try {
+          const directRef = collection(db, 'registrations');
+          const directDocRef = await addDoc(directRef, {
+            ...data,
+            // Add a timestamp to ensure we have a fresh document
+            _timestamp: new Date().toISOString()
+          });
+          console.log('Registration added with direct approach:', directDocRef.id);
+          return directDocRef.id;
+        } catch (directError) {
+          console.error('Direct approach failed:', directError);
+          throw directError;
+        }
+      } else {
+        throw error; // Re-throw other errors
+      }
+    }
   } catch (error) {
     console.error('Error creating registration:', error);
     throw error; // Re-throw to handle in the component

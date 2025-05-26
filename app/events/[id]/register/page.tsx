@@ -124,7 +124,7 @@ export default function RegisterPage({ params }: { params: { id: string } }) {
         stack: error.stack,
         device: isMobile ? 'mobile' : 'desktop',
         userAgent: navigator.userAgent,
-        url: window.location.href,
+        url: window.location.href
       };
       
       console.error("Error details:", JSON.stringify(errorDetails));
@@ -132,7 +132,9 @@ export default function RegisterPage({ params }: { params: { id: string } }) {
       
       // Show appropriate error message based on error code
       if (error.code === 'permission-denied') {
-        toast.error("Registration failed: Permission denied. Please try again later.");
+        toast.error("Registration failed: Permission denied. Please try again later or use a desktop browser.");
+      } else if (error.code === 'auth/admin-restricted-operation') {
+        toast.error("Registration failed: Authentication issue. Please try again later.");
       } else {
         toast.error("Registration failed. Please try again later.");
       }
