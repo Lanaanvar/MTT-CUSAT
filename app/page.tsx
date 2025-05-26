@@ -35,9 +35,9 @@ export default function Home() {
                 asChild
                 size="lg"
                 variant="outline"
-                className="border-white text-white hover:bg-white/10 w-full sm:w-auto"
+                className="border-white  hover:bg-white/10 w-full sm:w-auto"
               >
-                <Link href="https://www.ieee.org/membership-catalog/productdetail/showProductDetailPage.html?product=MEMMTT017&searchResults=Y" className="flex items-center justify-center">
+                <Link href="https://www.ieee.org/membership-catalog/productdetail/showProductDetailPage.html?product=MEMMTT017&searchResults=Y" className="flex items-center text-blue-900 justify-center">
                   Join MTT-S
                 </Link>
               </Button>

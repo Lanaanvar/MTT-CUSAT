@@ -2,15 +2,13 @@
 
 import Link from "next/link";
 import {
-  Facebook,
-  Twitter,
   Instagram,
   Linkedin,
   Mail,
   MapPin,
   Phone,
 } from "lucide-react";
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 
 interface TeamMember {
   name: string;
@@ -19,12 +17,12 @@ interface TeamMember {
 
 const TeamModal = ({
   isVisible,
-  onClose,
-  position,
+  onMouseLeave,
+  isMobile = false,
 }: {
   isVisible: boolean;
-  onClose: () => void;
-  position: { x: number; y: number } | null;
+  onMouseLeave: () => void;
+  isMobile?: boolean;
 }) => {
   const teamMembers: TeamMember[] = [
     { name: "Revathy", linkedin: "http://www.linkedin.com/in/revuz" },
@@ -33,54 +31,27 @@ const TeamModal = ({
     { name: "Lana", linkedin: "https://www.linkedin.com/in/lana-anvar" },
   ];
 
-  const modalRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    // Close the modal when clicking outside
-    const handleClickOutside = (event: MouseEvent) => {
-      if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
-        onClose();
-      }
-    };
-
-    if (isVisible) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-    
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [isVisible, onClose]);
-
-  if (!isVisible || !position) return null;
-
-  // Calculate position to ensure modal stays within viewport
-  const style: React.CSSProperties = {
-    position: 'fixed',
-    left: `${position.x}px`,
-    top: `${position.y}px`,
-    transform: 'translateY(-100%)',
-    zIndex: 50,
-  };
+  if (!isVisible) return null;
 
   return (
     <div
-      ref={modalRef}
-      className="bg-white text-gray-900 p-4 rounded-lg shadow-lg w-64"
-      style={style}
+      className={`absolute ${
+        isMobile 
+          ? "bottom-full mb-2 left-1/2 transform -translate-x-1/2 w-48" 
+          : "bottom-full mb-2 right-0 w-auto"
+      } bg-white text-gray-900 p-4 rounded-lg shadow-lg z-10`}
+      onMouseLeave={onMouseLeave}
     >
-      <div className="space-y-3">
-        <h3 className="font-semibold text-center mb-2 border-b pb-1">Team Members</h3>
+      <div className="space-y-2">
         {teamMembers.map((member) => (
-          <div key={member.name} className="flex items-center justify-between">
-            <span className="font-medium">{member.name}</span>
+          <div key={member.name} className="flex items-center gap-2">
+            <span className="text-sm">{member.name}</span>
             <Link
               href={member.linkedin}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-blue-600 hover:text-blue-800 transition-colors"
             >
-              <Linkedin className="h-4 w-4" />
+              <Linkedin className="h-4 w-4 text-blue-600" />
             </Link>
           </div>
         ))}
@@ -91,25 +62,11 @@ const TeamModal = ({
 
 export default function Footer() {
   const [showTeamModal, setShowTeamModal] = useState(false);
-  const [modalPosition, setModalPosition] = useState<{ x: number; y: number } | null>(null);
-  const teamLinkRef = useRef<HTMLSpanElement>(null);
-
-  const handleTeamClick = (e: React.MouseEvent) => {
-    // Get position for the modal
-    if (teamLinkRef.current) {
-      const rect = teamLinkRef.current.getBoundingClientRect();
-      setModalPosition({
-        x: rect.left + rect.width / 2,
-        y: rect.top - 10
-      });
-    }
-    setShowTeamModal(true);
-  };
 
   return (
     <footer className="bg-gray-900 text-white">
-      <div className="container mx-auto px-4 md:px-6 py-10 md:py-12">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
+      <div className="container mx-auto px-4 md:px-6 py-12">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* About */}
           <div>
             <h3 className="text-xl font-bold mb-4">IEEE MTT-S CUSAT SB</h3>
@@ -121,16 +78,16 @@ export default function Footer() {
               <Link
                 href="https://www.instagram.com/ieeemttscusat"
                 className="text-gray-400 hover:text-white transition-colors"
-                aria-label="Instagram"
               >
                 <Instagram className="h-5 w-5" />
+                <span className="sr-only">Instagram</span>
               </Link>
               <Link
                 href="https://www.linkedin.com/in/mtts-cusat-0967a8367"
                 className="text-gray-400 hover:text-white transition-colors"
-                aria-label="LinkedIn"
               >
                 <Linkedin className="h-5 w-5" />
+                <span className="sr-only">LinkedIn</span>
               </Link>
             </div>
           </div>
@@ -187,8 +144,6 @@ export default function Footer() {
                 <Link
                   href="https://www.ieee.org/"
                   className="text-gray-400 hover:text-white transition-colors"
-                  target="_blank"
-                  rel="noopener noreferrer"
                 >
                   IEEE
                 </Link>
@@ -197,8 +152,6 @@ export default function Footer() {
                 <Link
                   href="https://mtt.org/"
                   className="text-gray-400 hover:text-white transition-colors"
-                  target="_blank"
-                  rel="noopener noreferrer"
                 >
                   IEEE MTT-S
                 </Link>
@@ -207,8 +160,6 @@ export default function Footer() {
                 <Link
                   href="https://www.ieee.org/membership/join/index.html"
                   className="text-gray-400 hover:text-white transition-colors"
-                  target="_blank"
-                  rel="noopener noreferrer"
                 >
                   IEEE Membership
                 </Link>
@@ -231,7 +182,7 @@ export default function Footer() {
                 <Mail className="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" />
                 <Link
                   href="mailto:mttscusatofficial@gmail.com"
-                  className="text-gray-400 hover:text-white transition-colors"
+                  className="text-gray-400 hover:text-white transition-colors break-all"
                 >
                   mttscusatofficial@gmail.com
                 </Link>
@@ -249,23 +200,26 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="border-t border-gray-800 mt-8 pt-6 flex flex-col md:flex-row justify-between items-center">
-          <p className="text-gray-400 text-sm text-center md:text-left">
-            © {new Date().getFullYear()} IEEE MTT-S. All rights reserved.
-          </p>
-          <div className="mt-4 md:mt-0">
-            <span
-              ref={teamLinkRef}
-              className="text-gray-400 text-sm cursor-pointer hover:text-white transition-colors"
-              onClick={handleTeamClick}
-            >
-              Made with ❤️ by <span className="underline">Us!</span>
-            </span>
-            <TeamModal
-              isVisible={showTeamModal}
-              onClose={() => setShowTeamModal(false)}
-              position={modalPosition}
-            />
+        <div className="border-t border-gray-800 mt-10 pt-6">
+          <div className="flex flex-col items-center space-y-4 md:flex-row md:justify-between md:items-center md:space-y-0">
+            <p className="text-gray-400 text-sm text-center md:text-left">
+              © {new Date().getFullYear()} IEEE MTT-S. All rights reserved.
+            </p>
+            
+            <div className="relative">
+              <span
+                className="text-gray-400 text-sm cursor-pointer hover:text-white transition-colors inline-block text-center"
+                onMouseEnter={() => setShowTeamModal(true)}
+                onClick={() => setShowTeamModal(!showTeamModal)} // Add click for mobile
+              >
+                Made with ❤️ by <span className="underline">Us!</span>
+              </span>
+              <TeamModal
+                isVisible={showTeamModal}
+                onMouseLeave={() => setShowTeamModal(false)}
+                isMobile={true} 
+              />
+            </div>
           </div>
         </div>
       </div>
