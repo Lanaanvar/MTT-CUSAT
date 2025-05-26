@@ -30,7 +30,6 @@ export default function RegisterPage({ params }: { params: { id: string } }) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [event, setEvent] = useState<any>(null)
-  const [offlineMode, setOfflineMode] = useState(false)
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -41,18 +40,7 @@ export default function RegisterPage({ params }: { params: { id: string } }) {
     membershipType: "non-ieee" as MembershipType,
     membershipId: "",
   })
-
-  // Detect if user is on a mobile device
-  useEffect(() => {
-    if (isMobile) {
-      console.log("Mobile device detected");
-      // Pre-emptively enable offline mode for mobile devices
-      if (/iPhone|iPad/i.test(navigator.userAgent)) {
-        // iOS devices are more likely to have Firestore issues
-        setOfflineMode(true);
-      }
-    }
-  }, []);
+  const [error, setError] = useState<string | null>(null)
 
   // Fetch event data
   useEffect(() => {
@@ -62,8 +50,7 @@ export default function RegisterPage({ params }: { params: { id: string } }) {
         setEvent(eventData);
       } catch (error) {
         console.error("Error loading event:", error);
-        setOfflineMode(true);
-        toast.error("Loading in offline mode. Some features may be limited.");
+        toast.error("Could not load event details. Please try again later.");
       }
     }
     
@@ -84,19 +71,21 @@ export default function RegisterPage({ params }: { params: { id: string } }) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
+    setError(null)
 
     try {
       // Get event details to include in registration
       const eventData = event || await getEventById(eventId)
       if (!eventData) {
         toast.error("Event not found")
+        setLoading(false)
         return
       }
 
       // Calculate registration amount
       const registrationAmount = formData.membershipType === "ieee" ? eventData.fees?.ieee || 0 : eventData.fees?.nonIeee || 0
 
-      // Prepare registration data with proper type assertions
+      // Prepare registration data
       const registrationData: Omit<Registration, 'id'> = {
         ...formData,
         eventId: eventId,
@@ -107,93 +96,45 @@ export default function RegisterPage({ params }: { params: { id: string } }) {
         amount: registrationAmount
       };
 
-      console.log("Submitting registration data:", JSON.stringify(registrationData));
+      console.log("Device type:", isMobile ? "Mobile" : "Desktop");
+      console.log("Browser:", navigator.userAgent);
+      console.log("Submitting registration...");
       
-      // Try to create registration with better error handling
-      try {
-        const registrationId = await createRegistration(registrationData);
-        console.log('Registration completed successfully with ID:', registrationId);
-        
-        // Show success message based on payment status
-        if (registrationAmount > 0) {
-          toast.info("Your registration is pending approval. You will be notified once it's approved.");
-        } else {
-          toast.success("Registration successful!");
-        }
-        
-        // Redirect to success page with delay to ensure localStorage writes complete
-        setTimeout(() => {
-          router.replace(`/events/${eventId}/register/success`);
-        }, 500);
-      } catch (firebaseError: any) {
-        console.error("Firebase registration error:", firebaseError);
-        console.error("Error code:", firebaseError.code);
-        console.error("Error message:", firebaseError.message);
-        
-        // Always save locally as a backup
-        const fallbackId = `registration-${Date.now()}`;
-        const fallbackData = { 
-          id: fallbackId, 
-          ...registrationData
-        };
-        
-        try {
-          const existingData = localStorage.getItem('offline_registrations');
-          const offlineRegistrations = existingData ? JSON.parse(existingData) : [];
-          offlineRegistrations.push(fallbackData);
-          localStorage.setItem('offline_registrations', JSON.stringify(offlineRegistrations));
-          console.log("Registration saved locally as fallback");
-        } catch (storageError) {
-          console.error("Failed to save locally:", storageError);
-        }
-        
-        // Check if this might be due to permission errors on mobile
-        if (firebaseError.code === 'permission-denied' || offlineMode) {
-          setOfflineMode(true);
-          toast.info("Your registration is saved in offline mode due to network limitations. It will sync when you return online.");
-          
-          // Still redirect to success page after a delay
-          setTimeout(() => {
-            router.replace(`/events/${eventId}/register/success`);
-          }, 500);
-        } else {
-          // For other errors, show error message but don't redirect
-          toast.error("There was a problem with your registration. Please try again later.");
-        }
+      // Create registration in Firestore
+      const registrationId = await createRegistration(registrationData);
+      console.log("Registration successful with ID:", registrationId);
+      
+      // Show success message
+      if (registrationAmount > 0) {
+        toast.info("Your registration is pending approval. You will be notified once it's approved.");
+      } else {
+        toast.success("Registration successful!");
       }
-    } catch (error) {
+      
+      // Redirect to success page
+      router.replace(`/events/${eventId}/register/success`);
+      
+    } catch (error: any) {
       console.error("Error submitting registration:", error);
       
-      // Always try localStorage as fallback
-      try {
-        // Store registration in localStorage as fallback
-        const fallbackId = `registration-${Date.now()}`;
-        const fallbackData = { 
-          id: fallbackId, 
-          ...formData,
-          eventId: eventId,
-          eventTitle: event?.title || "Event",
-          registrationDate: new Date().toISOString(),
-          status: "pending" as RegistrationStatus,
-          paymentStatus: "pending" as PaymentStatus,
-          amount: 0
-        };
-        const existingData = localStorage.getItem('offline_registrations');
-        const offlineRegistrations = existingData ? JSON.parse(existingData) : [];
-        offlineRegistrations.push(fallbackData);
-        localStorage.setItem('offline_registrations', JSON.stringify(offlineRegistrations));
-        
-        // Consider it a success since we saved locally
-        setOfflineMode(true);
-        toast.success("Registration saved locally. It will be synchronized when you're back online.");
-        
-        // Redirect after a delay to ensure localStorage is written
-        setTimeout(() => {
-          router.replace(`/events/${eventId}/register/success`);
-        }, 500);
-      } catch (storageError) {
-        console.error("Failed to store registration locally:", storageError);
-        toast.error("Failed to submit registration. Please try again or check your connection.");
+      // Capture detailed error information
+      const errorDetails = {
+        code: error.code || 'unknown',
+        message: error.message || 'Unknown error',
+        stack: error.stack,
+        device: isMobile ? 'mobile' : 'desktop',
+        userAgent: navigator.userAgent,
+        url: window.location.href,
+      };
+      
+      console.error("Error details:", JSON.stringify(errorDetails));
+      setError(`Error: ${errorDetails.code} - ${errorDetails.message}`);
+      
+      // Show appropriate error message based on error code
+      if (error.code === 'permission-denied') {
+        toast.error("Registration failed: Permission denied. Please try again later.");
+      } else {
+        toast.error("Registration failed. Please try again later.");
       }
     } finally {
       setLoading(false);
@@ -208,12 +149,6 @@ export default function RegisterPage({ params }: { params: { id: string } }) {
             <ArrowLeft className="mr-2 h-4 w-4" /> Back to Event
           </Link>
         </Button>
-        
-        {offlineMode && (
-          <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded-md mb-4">
-            <p className="text-sm font-medium">You are in offline mode. Your registration will be saved locally.</p>
-          </div>
-        )}
       </div>
 
       <Card className="max-w-2xl mx-auto shadow-md">
@@ -226,6 +161,13 @@ export default function RegisterPage({ params }: { params: { id: string } }) {
           )}
         </CardHeader>
         <CardContent>
+          {error && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-800 rounded-md">
+              <p className="text-sm font-medium">Error occurred: {error}</p>
+              <p className="text-xs mt-1">Please try again or contact support if the problem persists.</p>
+            </div>
+          )}
+          
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-4">
               {/* Personal Information Section */}

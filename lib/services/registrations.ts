@@ -32,103 +32,17 @@ export interface Registration {
   paymentScreenshot?: string
 }
 
-// Sample registration for fallback in case Firestore is blocked
-const fallbackRegistration: Registration = {
-  id: 'sample-registration-1',
-  eventId: 'sample-event-1',
-  eventTitle: 'Microwave Design Workshop',
-  name: 'Sample User',
-  email: 'user@example.com',
-  phone: '1234567890',
-  college: 'CUSAT',
-  department: 'Electronics',
-  year: '3',
-  membershipType: 'ieee',
-  membershipId: 'IEEE12345',
-  registrationDate: new Date().toISOString(),
-  status: 'approved',
-  paymentStatus: 'completed',
-  amount: 100
-};
-
 export async function createRegistration(data: Omit<Registration, 'id'>): Promise<string> {
   try {
-    // Immediately try to use Firestore with proper error handling
-    try {
-      // Ensure collection name is correctly lowercase
-      const registrationsRef = collection(db, 'registrations');
-      
-      // Add additional console logging to help debug
-      console.log('Attempting to add registration to Firestore...');
-      
-      const docRef = await addDoc(registrationsRef, data);
-      console.log('Registration added to Firestore successfully with ID:', docRef.id);
-      return docRef.id;
-    } catch (firebaseError: any) {
-      console.error('Firebase registration error details:', firebaseError.code, firebaseError.message);
-      
-      // Check for specific Firebase errors
-      if (firebaseError.code === 'permission-denied' || 
-          firebaseError.code === 'unavailable' ||
-          firebaseError.message?.includes('Client is offline')) {
-        // These are common errors on mobile, fall back to local storage
-        console.log('Using localStorage fallback due to Firebase permission error');
-        const localId = saveRegistrationLocally(data);
-        console.log('Registration saved locally with ID:', localId);
-        return localId;
-      }
-      
-      // For other errors, we still try local storage but rethrow
-      const localId = saveRegistrationLocally(data);
-      throw firebaseError;
-    }
+    // Simple, direct approach - just add to Firestore
+    const registrationsRef = collection(db, 'registrations');
+    console.log('Adding registration to Firestore...');
+    const docRef = await addDoc(registrationsRef, data);
+    console.log('Registration added with ID:', docRef.id);
+    return docRef.id;
   } catch (error) {
     console.error('Error creating registration:', error);
-    
-    // Final fallback - try to save locally no matter what
-    return saveRegistrationLocally(data);
-  }
-}
-
-// Helper function to save registration locally
-function saveRegistrationLocally(data: Omit<Registration, 'id'>): string {
-  try {
-    const fallbackId = `registration-${Date.now()}`;
-    const fallbackData = { id: fallbackId, ...data };
-    
-    // Read existing data with error handling
-    let offlineRegistrations = [];
-    try {
-      const existingData = localStorage.getItem('offline_registrations');
-      if (existingData) {
-        offlineRegistrations = JSON.parse(existingData);
-      }
-    } catch (readError) {
-      console.error('Error reading from localStorage:', readError);
-      // Continue with empty array if can't read
-    }
-    
-    // Add new registration
-    offlineRegistrations.push(fallbackData);
-    
-    // Write back with error handling
-    try {
-      localStorage.setItem('offline_registrations', JSON.stringify(offlineRegistrations));
-      console.log('Registration stored in localStorage successfully');
-    } catch (writeError) {
-      console.error('Error writing to localStorage:', writeError);
-      // Try with just this registration if full array is too big
-      try {
-        localStorage.setItem('offline_registrations', JSON.stringify([fallbackData]));
-      } catch (fallbackError) {
-        console.error('Failed even with single registration:', fallbackError);
-      }
-    }
-    
-    return fallbackId;
-  } catch (storageError) {
-    console.error('Failed to store registration locally:', storageError);
-    return 'temp-' + Date.now();
+    throw error; // Re-throw to handle in the component
   }
 }
 
@@ -173,43 +87,7 @@ export async function getRegistrations(filters?: {
     return registrations
   } catch (error) {
     console.error('Error fetching registrations:', error)
-    
-    // Try to load any offline registrations from localStorage
-    try {
-      const offlineData = localStorage.getItem('offline_registrations');
-      if (offlineData) {
-        const offlineRegistrations = JSON.parse(offlineData) as Registration[];
-        
-        // Apply the same filters
-        let filteredRegistrations = [...offlineRegistrations];
-        
-        if (filters?.eventId) {
-          filteredRegistrations = filteredRegistrations.filter(reg => reg.eventId === filters.eventId);
-        }
-        
-        if (filters?.status && filters.status !== 'all') {
-          filteredRegistrations = filteredRegistrations.filter(reg => reg.status === filters.status);
-        }
-        
-        if (filters?.search) {
-          const searchLower = filters.search.toLowerCase();
-          filteredRegistrations = filteredRegistrations.filter(reg =>
-            reg.name.toLowerCase().includes(searchLower) ||
-            reg.email.toLowerCase().includes(searchLower) ||
-            reg.college.toLowerCase().includes(searchLower)
-          );
-        }
-        
-        if (filteredRegistrations.length > 0) {
-          return filteredRegistrations;
-        }
-      }
-    } catch (storageError) {
-      console.error('Error retrieving offline registrations:', storageError);
-    }
-    
-    // Return fallback data if nothing else is available
-    return [fallbackRegistration];
+    throw error;
   }
 }
 
@@ -224,21 +102,7 @@ export async function getRegistrationById(id: string): Promise<Registration | nu
     } as Registration
   } catch (error) {
     console.error('Error fetching registration:', error)
-    
-    // Check localStorage for offline registrations
-    try {
-      const offlineData = localStorage.getItem('offline_registrations');
-      if (offlineData) {
-        const offlineRegistrations = JSON.parse(offlineData) as Registration[];
-        const offlineReg = offlineRegistrations.find(reg => reg.id === id);
-        if (offlineReg) return offlineReg;
-      }
-    } catch (storageError) {
-      console.error('Error retrieving offline registration:', storageError);
-    }
-    
-    // Return fallback registration as last resort
-    return fallbackRegistration;
+    throw error;
   }
 }
 
@@ -251,23 +115,7 @@ export async function updateRegistration(
     await updateDoc(registrationRef, data)
   } catch (error) {
     console.error('Error updating registration:', error)
-    
-    // Update in localStorage if firestore fails
-    try {
-      const offlineData = localStorage.getItem('offline_registrations');
-      if (offlineData) {
-        const offlineRegistrations = JSON.parse(offlineData) as Registration[];
-        const index = offlineRegistrations.findIndex(reg => reg.id === id);
-        
-        if (index !== -1) {
-          offlineRegistrations[index] = { ...offlineRegistrations[index], ...data };
-          localStorage.setItem('offline_registrations', JSON.stringify(offlineRegistrations));
-          console.log('Registration updated locally due to Firestore error');
-        }
-      }
-    } catch (storageError) {
-      console.error('Failed to update registration locally:', storageError);
-    }
+    throw error;
   }
 }
 
@@ -277,19 +125,7 @@ export async function deleteRegistration(id: string): Promise<void> {
     await deleteDoc(registrationRef)
   } catch (error) {
     console.error('Error deleting registration:', error)
-    
-    // Remove from localStorage if firestore fails
-    try {
-      const offlineData = localStorage.getItem('offline_registrations');
-      if (offlineData) {
-        let offlineRegistrations = JSON.parse(offlineData) as Registration[];
-        offlineRegistrations = offlineRegistrations.filter(reg => reg.id !== id);
-        localStorage.setItem('offline_registrations', JSON.stringify(offlineRegistrations));
-        console.log('Registration deleted locally due to Firestore error');
-      }
-    } catch (storageError) {
-      console.error('Failed to delete registration locally:', storageError);
-    }
+    throw error;
   }
 }
 
@@ -300,9 +136,6 @@ export const getRegistrationsByEventAndEmail = async (eventId: string) => {
       registrationsRef,
       where('eventId', '==', eventId),
       orderBy('registrationDate', 'desc'),
-      // Note: In a real app, you'd get the user's email from the session
-      // For now, we'll just get the most recent registration for this event
-      // as a simple way to identify the user's registration
       limit(1)
     )
     const querySnapshot = await getDocs(q)
@@ -313,22 +146,6 @@ export const getRegistrationsByEventAndEmail = async (eventId: string) => {
     })) as Registration[]
   } catch (error) {
     console.error('Error getting registrations:', error)
-    
-    // Check localStorage for offline registrations
-    try {
-      const offlineData = localStorage.getItem('offline_registrations');
-      if (offlineData) {
-        const offlineRegistrations = JSON.parse(offlineData) as Registration[];
-        const filteredRegs = offlineRegistrations.filter(reg => reg.eventId === eventId);
-        if (filteredRegs.length > 0) {
-          return filteredRegs;
-        }
-      }
-    } catch (storageError) {
-      console.error('Error retrieving offline registrations:', storageError);
-    }
-    
-    // Return fallback data if nothing else is available
-    return [fallbackRegistration];
+    throw error;
   }
 } 

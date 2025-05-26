@@ -17,7 +17,7 @@ let app: FirebaseApp;
 let db: Firestore;
 let auth: Auth;
 
-// Check if browser is mobile
+// Basic mobile detection for UI adjustments only
 const isMobile = typeof window !== 'undefined' ? 
   /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) : false;
 
@@ -26,7 +26,7 @@ try {
   db = getFirestore(app);
   auth = getAuth(app);
   
-  // Sign in anonymously for access to Firestore
+  // Sign in anonymously for Firestore access
   if (typeof window !== 'undefined') {
     signInAnonymously(auth)
       .then(() => {
@@ -37,14 +37,13 @@ try {
       });
   }
   
-  // Configure domain authorization for auth
+  // Configure domain authorization
   if (typeof window !== 'undefined') {
     configureDomainAuth();
   }
   
-  // Enable offline persistence for Firestore with error handling
+  // Enable offline persistence for Firestore
   if (typeof window !== 'undefined') {
-    // Only enable persistence in browser environment
     enableIndexedDbPersistence(db)
       .then(() => {
         console.log("Persistence enabled");
