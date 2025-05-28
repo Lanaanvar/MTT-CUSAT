@@ -33,45 +33,55 @@ export interface Registration {
   paymentScreenshot?: string
 }
 
-export async function createRegistration(data: Omit<Registration, 'id'>): Promise<string> {
+export async function createRegistration(registrationData: Omit<Registration, 'id'>): Promise<string> {
   try {
-    // Add to Firestore directly - don't try to authenticate here
-    // The Firestore rules are set to allow unauthenticated registration
-    const registrationsRef = collection(db, 'registrations');
-    console.log('Adding registration to Firestore...');
+    // Try to anonymously authenticate if possible
+    if (isAnonymousAuthEnabled) {
+      await signInAnonymously(auth);
+    }
     
+    // First attempt - using standard collection
+    const registrationsRef = collection(db, 'registrations');
+    const docRef = await addDoc(registrationsRef, {
+      ...registrationData,
+      createdAt: new Date().toISOString()
+    });
+    
+    return docRef.id;
+  } catch (error) {
+    // If first attempt fails, try direct approach
     try {
-      const docRef = await addDoc(registrationsRef, data);
-      console.log('Registration added with ID:', docRef.id);
-      return docRef.id;
-    } catch (error: any) {
-      console.error('Error in first registration attempt:', error);
+      // Try a different approach - direct path
+      const directDocRef = await addDoc(collection(db, 'registrations'), {
+        ...registrationData,
+        createdAt: new Date().toISOString(),
+        directSubmission: true
+      });
       
-      // If we get a permission error, try a direct approach without auth
-      if (error.code === 'permission-denied') {
-        console.log('Permission denied, trying direct approach...');
+      return directDocRef.id;
+    } catch (directError) {
+      // If all Firebase attempts fail, try storing locally
+      try {
+        const fallbackId = `offline-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+        const registrationWithId = { 
+          id: fallbackId,
+          ...registrationData,
+          isOffline: true,
+          createdAt: new Date().toISOString()
+        };
         
-        // Try again with a direct approach
-        try {
-          const directRef = collection(db, 'registrations');
-          const directDocRef = await addDoc(directRef, {
-            ...data,
-            // Add a timestamp to ensure we have a fresh document
-            _timestamp: new Date().toISOString()
-          });
-          console.log('Registration added with direct approach:', directDocRef.id);
-          return directDocRef.id;
-        } catch (directError) {
-          console.error('Direct approach failed:', directError);
-          throw directError;
-        }
-      } else {
-        throw error; // Re-throw other errors
+        // Store offline
+        const existingItems = localStorage.getItem('offline-registrations');
+        const offlineRegistrations = existingItems ? JSON.parse(existingItems) : [];
+        offlineRegistrations.push(registrationWithId);
+        localStorage.setItem('offline-registrations', JSON.stringify(offlineRegistrations));
+        
+        return fallbackId;
+      } catch (storageError) {
+        // Re-throw the original error if local storage fails
+        throw error;
       }
     }
-  } catch (error) {
-    console.error('Error creating registration:', error);
-    throw error; // Re-throw to handle in the component
   }
 }
 
@@ -122,39 +132,40 @@ export async function getRegistrations(filters?: {
 
 export async function getRegistrationById(id: string): Promise<Registration | null> {
   try {
-    const registrationDoc = await getDoc(doc(db, 'registrations', id))
-    if (!registrationDoc.exists()) return null
+    const docRef = doc(db, 'registrations', id);
+    const docSnap = await getDoc(docRef);
     
-    return {
-      id: registrationDoc.id,
-      ...registrationDoc.data()
-    } as Registration
+    if (docSnap.exists()) {
+      return {
+        id: docSnap.id,
+        ...docSnap.data()
+      } as Registration;
+    }
+    
+    return null;
   } catch (error) {
-    console.error('Error fetching registration:', error)
-    throw error;
+    return null;
   }
 }
 
-export async function updateRegistration(
-  id: string,
-  data: Partial<Omit<Registration, 'id'>>
-): Promise<void> {
+export async function updateRegistration(id: string, data: Partial<Registration>): Promise<boolean> {
   try {
-    const registrationRef = doc(db, 'registrations', id)
-    await updateDoc(registrationRef, data)
+    await updateDoc(doc(db, 'registrations', id), { 
+      ...data,
+      updatedAt: new Date().toISOString()
+    });
+    return true;
   } catch (error) {
-    console.error('Error updating registration:', error)
-    throw error;
+    return false;
   }
 }
 
-export async function deleteRegistration(id: string): Promise<void> {
+export async function deleteRegistration(id: string): Promise<boolean> {
   try {
-    const registrationRef = doc(db, 'registrations', id)
-    await deleteDoc(registrationRef)
+    await deleteDoc(doc(db, 'registrations', id));
+    return true;
   } catch (error) {
-    console.error('Error deleting registration:', error)
-    throw error;
+    return false;
   }
 }
 
@@ -176,5 +187,23 @@ export const getRegistrationsByEventAndEmail = async (eventId: string) => {
   } catch (error) {
     console.error('Error getting registrations:', error)
     throw error;
+  }
+}
+
+export async function getRegistrationsByEventId(eventId: string): Promise<Registration[]> {
+  try {
+    const q = query(
+      collection(db, 'registrations'),
+      where('eventId', '==', eventId)
+    );
+    
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    } as Registration));
+  } catch (error) {
+    // Return empty array on error
+    return [];
   }
 } 

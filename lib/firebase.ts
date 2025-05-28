@@ -40,16 +40,10 @@ try {
     try {
       // Only try to enable persistence if we're in a browser environment
       enableIndexedDbPersistence(db).catch((err) => {
-        if (err.code === 'failed-precondition') {
-          console.warn("Persistence unavailable - multiple tabs open");
-        } else if (err.code === 'unimplemented') {
-          console.warn("Persistence unavailable - browser not supported");
-        } else {
-          console.warn("Persistence error:", err);
-        }
+        // Silently handle persistence errors
       });
     } catch (persistenceError) {
-      console.warn("Could not enable persistence:", persistenceError);
+      // Silently handle persistence errors
     }
   }
   
@@ -57,28 +51,16 @@ try {
   if (typeof window !== 'undefined') {
     // Don't use async IIFE which can cause timing issues
     signInAnonymously(auth).then(() => {
-      console.log("Signed in anonymously for Firestore access");
       isAnonymousAuthEnabled = true;
     }).catch((error) => {
-      console.error("Anonymous auth error:", error);
-      
-      // Check for admin-restricted-operation error
+      // Handle anonymous auth errors silently
       if (error.code === 'auth/admin-restricted-operation') {
-        console.warn("Anonymous authentication is disabled in Firebase console.");
-        console.warn("To fix this error, go to Firebase console > Authentication > Sign-in method");
-        console.warn("and enable Anonymous authentication provider.");
         isAnonymousAuthEnabled = false;
-        
-        // Show a more user-friendly message in the console
-        console.info("The app will continue to work with limited functionality.");
-        console.info("Some features may require you to sign in.");
       }
-      // Don't retry immediately - this can cause rate limiting
     });
   }
 } catch (error) {
-  console.error('Error initializing Firebase:', error);
-  // Attempt to initialize again if failed
+  // Attempt to initialize again if failed - silently
   if (!app) app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
   if (!db) db = getFirestore(app);
   if (!auth) auth = getAuth(app);

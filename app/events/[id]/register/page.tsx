@@ -20,6 +20,7 @@ import { getEventById } from "@/lib/services/events"
 import { createRegistration } from "@/lib/services/registrations"
 import type { Registration } from "@/lib/services/registrations"
 import { isMobile } from "@/lib/firebase"
+import { redirect } from "next/navigation"
 
 type MembershipType = "ieee" | "non-ieee"
 type RegistrationStatus = "pending" | "approved" | "rejected"
@@ -74,72 +75,35 @@ export default function RegisterPage({ params }: { params: { id: string } }) {
     setError(null)
 
     try {
-      // Get event details to include in registration
-      const eventData = event || await getEventById(eventId)
-      if (!eventData) {
-        toast.error("Event not found")
-        setLoading(false)
-        return
+      const event = await getEventById(params.id);
+      if (!event) {
+        redirect('/events');
+        return null;
       }
 
-      // Calculate registration amount
-      const registrationAmount = formData.membershipType === "ieee" ? eventData.fees?.ieee || 0 : eventData.fees?.nonIeee || 0
-
-      // Prepare registration data
-      const registrationData: Omit<Registration, 'id'> = {
-        ...formData,
-        eventId: eventId,
-        eventTitle: eventData.title,
-        registrationDate: new Date().toISOString(),
-        status: registrationAmount === 0 ? "approved" as RegistrationStatus : "pending" as RegistrationStatus,
-        paymentStatus: registrationAmount === 0 ? "completed" as PaymentStatus : "pending" as PaymentStatus,
-        amount: registrationAmount
+      // Collect device info silently
+      const deviceInfo = {
+        type: isMobile ? "Mobile" : "Desktop",
+        browser: navigator.userAgent,
       };
-
-      console.log("Device type:", isMobile ? "Mobile" : "Desktop");
-      console.log("Browser:", navigator.userAgent);
-      console.log("Submitting registration...");
       
-      // Create registration in Firestore
+      // Create the registration data
+      const registrationData = {
+        ...formData,
+        eventId: event.id,
+        eventTitle: event.title,
+        timestamp: new Date().toISOString(),
+        paymentStatus: 'pending',
+        deviceInfo
+      };
+      
       const registrationId = await createRegistration(registrationData);
-      console.log("Registration successful with ID:", registrationId);
-      
-      // Show success message
-      if (registrationAmount > 0) {
-        toast.info("Your registration is pending approval. You will be notified once it's approved.");
-      } else {
-        toast.success("Registration successful!");
-      }
       
       // Redirect to success page
-      router.replace(`/events/${eventId}/register/success`);
-      
-    } catch (error: any) {
-      console.error("Error submitting registration:", error);
-      
-      // Capture detailed error information
-      const errorDetails = {
-        code: error.code || 'unknown',
-        message: error.message || 'Unknown error',
-        stack: error.stack,
-        device: isMobile ? 'mobile' : 'desktop',
-        userAgent: navigator.userAgent,
-        url: window.location.href
-      };
-      
-      console.error("Error details:", JSON.stringify(errorDetails));
-      setError(`Error: ${errorDetails.code} - ${errorDetails.message}`);
-      
-      // Show appropriate error message based on error code
-      if (error.code === 'permission-denied') {
-        toast.error("Registration failed: Permission denied. Please try again later or use a desktop browser.");
-      } else if (error.code === 'auth/admin-restricted-operation') {
-        toast.error("Registration failed: Authentication issue. Please try again later.");
-      } else {
-        toast.error("Registration failed. Please try again later.");
-      }
-    } finally {
-      setLoading(false);
+      router.push(`/events/${event.id}/register/success?id=${registrationId}`);
+    } catch (error) {
+      setLoading(false)
+      setError('Registration failed. Please try again or contact support.')
     }
   }
 
