@@ -80,30 +80,26 @@ export default function RegisterPage({ params }: { params: { id: string } }) {
         redirect('/events');
         return null;
       }
-
-      // Collect device info silently
-      const deviceInfo = {
-        type: isMobile ? "Mobile" : "Desktop",
-        browser: navigator.userAgent,
-      };
       
-      // Create the registration data
+      // Create the registration data with all required fields
       const registrationData = {
         ...formData,
         eventId: event.id,
         eventTitle: event.title,
-        timestamp: new Date().toISOString(),
-        paymentStatus: 'pending',
-        deviceInfo
+        registrationDate: new Date().toISOString(),
+        status: 'pending' as const,
+        paymentStatus: 'pending' as const,
+        amount: formData.membershipType === 'ieee' ? (event.fees?.ieee || 0) : (event.fees?.nonIeee || 0)
       };
       
       const registrationId = await createRegistration(registrationData);
       
-      // Redirect to success page
+      // On success, redirect to success page
       router.push(`/events/${event.id}/register/success?id=${registrationId}`);
-    } catch (error) {
-      setLoading(false)
-      setError('Registration failed. Please try again or contact support.')
+    } catch (error: any) {
+      console.error("Registration error:", error);
+      setLoading(false);
+      setError('Registration failed. Please try again or contact support.');
     }
   }
 
@@ -130,7 +126,9 @@ export default function RegisterPage({ params }: { params: { id: string } }) {
           {error && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-800 rounded-md">
               <p className="text-sm font-medium">Error occurred: {error}</p>
-              <p className="text-xs mt-1">Please try again or contact support if the problem persists.</p>
+              <p className="text-xs mt-1">
+                Please try again or contact support if the problem persists.
+              </p>
             </div>
           )}
           

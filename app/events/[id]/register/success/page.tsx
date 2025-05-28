@@ -11,7 +11,6 @@ import type { Event } from "@/lib/services/events"
 export default function RegistrationSuccessPage({ params }: { params: { id: string } }) {
   const [event, setEvent] = useState<Event | null>(null)
   const [loading, setLoading] = useState(true)
-  const [offlineMode, setOfflineMode] = useState(false)
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -20,23 +19,6 @@ export default function RegistrationSuccessPage({ params }: { params: { id: stri
         setEvent(eventData)
       } catch (error) {
         console.error("Error fetching event:", error)
-        
-        // Check if we have offline registrations
-        try {
-          const offlineData = localStorage.getItem('offline_registrations')
-          if (offlineData) {
-            const offlineRegistrations = JSON.parse(offlineData)
-            const hasOfflineReg = offlineRegistrations.some(
-              (reg: any) => reg.eventId === params.id
-            )
-            
-            if (hasOfflineReg) {
-              setOfflineMode(true)
-            }
-          }
-        } catch (storageError) {
-          console.error("Error checking offline registrations:", storageError)
-        }
       } finally {
         setLoading(false)
       }
@@ -53,43 +35,6 @@ export default function RegistrationSuccessPage({ params }: { params: { id: stri
             <div className="text-center py-12">
               <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-900 mx-auto"></div>
               <p className="mt-4 text-gray-600">Loading your registration details...</p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    )
-  }
-
-  // Handle offline mode case
-  if (offlineMode) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <Card className="max-w-2xl mx-auto shadow-md">
-          <CardHeader>
-            <div className="flex items-center justify-center mb-4">
-              <div className="bg-yellow-100 p-3 rounded-full">
-                <AlertCircle className="h-8 w-8 text-yellow-600" />
-              </div>
-            </div>
-            <CardTitle className="text-center text-xl md:text-2xl">Registration Stored Locally</CardTitle>
-            <CardDescription className="text-center mt-2">
-              You are in offline mode. Your registration has been saved locally.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4 text-sm text-yellow-800">
-              <p>
-                Your registration will be synchronized when you're back online. 
-                You may need to revisit this page once you have an internet connection.
-              </p>
-            </div>
-
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button asChild variant="outline" className="w-full sm:w-auto">
-                <Link href="/events">
-                  <ArrowLeft className="mr-2 h-4 w-4" /> Back to Events
-                </Link>
-              </Button>
             </div>
           </CardContent>
         </Card>

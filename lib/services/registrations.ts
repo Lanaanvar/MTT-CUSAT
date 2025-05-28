@@ -34,54 +34,24 @@ export interface Registration {
 }
 
 export async function createRegistration(registrationData: Omit<Registration, 'id'>): Promise<string> {
+  // Ensure all required fields exist
+  const completeRegistrationData = {
+    ...registrationData,
+    status: registrationData.status || 'pending',
+    paymentStatus: registrationData.paymentStatus || 'pending',
+    amount: registrationData.amount || 0,
+    registrationDate: registrationData.registrationDate || new Date().toISOString(),
+    createdAt: new Date().toISOString()
+  };
+
+  // Direct attempt to create registration without auth check
   try {
-    // Try to anonymously authenticate if possible
-    if (isAnonymousAuthEnabled) {
-      await signInAnonymously(auth);
-    }
-    
-    // First attempt - using standard collection
     const registrationsRef = collection(db, 'registrations');
-    const docRef = await addDoc(registrationsRef, {
-      ...registrationData,
-      createdAt: new Date().toISOString()
-    });
-    
+    const docRef = await addDoc(registrationsRef, completeRegistrationData);
     return docRef.id;
   } catch (error) {
-    // If first attempt fails, try direct approach
-    try {
-      // Try a different approach - direct path
-      const directDocRef = await addDoc(collection(db, 'registrations'), {
-        ...registrationData,
-        createdAt: new Date().toISOString(),
-        directSubmission: true
-      });
-      
-      return directDocRef.id;
-    } catch (directError) {
-      // If all Firebase attempts fail, try storing locally
-      try {
-        const fallbackId = `offline-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
-        const registrationWithId = { 
-          id: fallbackId,
-          ...registrationData,
-          isOffline: true,
-          createdAt: new Date().toISOString()
-        };
-        
-        // Store offline
-        const existingItems = localStorage.getItem('offline-registrations');
-        const offlineRegistrations = existingItems ? JSON.parse(existingItems) : [];
-        offlineRegistrations.push(registrationWithId);
-        localStorage.setItem('offline-registrations', JSON.stringify(offlineRegistrations));
-        
-        return fallbackId;
-      } catch (storageError) {
-        // Re-throw the original error if local storage fails
-        throw error;
-      }
-    }
+    console.error("Registration creation failed:", error);
+    throw error;
   }
 }
 
