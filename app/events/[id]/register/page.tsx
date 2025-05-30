@@ -20,6 +20,7 @@ import { getEventById } from "@/lib/services/events"
 import { createRegistration } from "@/lib/services/registrations"
 import type { Registration } from "@/lib/services/registrations"
 import { isMobile } from "@/lib/firebase"
+import { redirect } from "next/navigation"
 
 type MembershipType = "ieee" | "non-ieee"
 type RegistrationStatus = "pending" | "approved" | "rejected"
@@ -74,70 +75,31 @@ export default function RegisterPage({ params }: { params: { id: string } }) {
     setError(null)
 
     try {
-      // Get event details to include in registration
-      const eventData = event || await getEventById(eventId)
-      if (!eventData) {
-        toast.error("Event not found")
-        setLoading(false)
-        return
+      const event = await getEventById(params.id);
+      if (!event) {
+        redirect('/events');
+        return null;
       }
-
-      // Calculate registration amount
-      const registrationAmount = formData.membershipType === "ieee" ? eventData.fees?.ieee || 0 : eventData.fees?.nonIeee || 0
-
-      // Prepare registration data
-      const registrationData: Omit<Registration, 'id'> = {
+      
+      // Create the registration data with all required fields
+      const registrationData = {
         ...formData,
-        eventId: eventId,
-        eventTitle: eventData.title,
+        eventId: event.id,
+        eventTitle: event.title,
         registrationDate: new Date().toISOString(),
-        status: registrationAmount === 0 ? "approved" as RegistrationStatus : "pending" as RegistrationStatus,
-        paymentStatus: registrationAmount === 0 ? "completed" as PaymentStatus : "pending" as PaymentStatus,
-        amount: registrationAmount
+        status: 'pending' as const,
+        paymentStatus: 'pending' as const,
+        amount: formData.membershipType === 'ieee' ? (event.fees?.ieee || 0) : (event.fees?.nonIeee || 0)
       };
-
-      console.log("Device type:", isMobile ? "Mobile" : "Desktop");
-      console.log("Browser:", navigator.userAgent);
-      console.log("Submitting registration...");
       
-      // Create registration in Firestore
       const registrationId = await createRegistration(registrationData);
-      console.log("Registration successful with ID:", registrationId);
       
-      // Show success message
-      if (registrationAmount > 0) {
-        toast.info("Your registration is pending approval. You will be notified once it's approved.");
-      } else {
-        toast.success("Registration successful!");
-      }
-      
-      // Redirect to success page
-      router.replace(`/events/${eventId}/register/success`);
-      
+      // On success, redirect to success page
+      router.push(`/events/${event.id}/register/success?id=${registrationId}`);
     } catch (error: any) {
-      console.error("Error submitting registration:", error);
-      
-      // Capture detailed error information
-      const errorDetails = {
-        code: error.code || 'unknown',
-        message: error.message || 'Unknown error',
-        stack: error.stack,
-        device: isMobile ? 'mobile' : 'desktop',
-        userAgent: navigator.userAgent,
-        url: window.location.href,
-      };
-      
-      console.error("Error details:", JSON.stringify(errorDetails));
-      setError(`Error: ${errorDetails.code} - ${errorDetails.message}`);
-      
-      // Show appropriate error message based on error code
-      if (error.code === 'permission-denied') {
-        toast.error("Registration failed: Permission denied. Please try again later.");
-      } else {
-        toast.error("Registration failed. Please try again later.");
-      }
-    } finally {
+      console.error("Registration error:", error);
       setLoading(false);
+      setError('Registration failed. Please try again or contact support.');
     }
   }
 
@@ -164,7 +126,9 @@ export default function RegisterPage({ params }: { params: { id: string } }) {
           {error && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-800 rounded-md">
               <p className="text-sm font-medium">Error occurred: {error}</p>
-              <p className="text-xs mt-1">Please try again or contact support if the problem persists.</p>
+              <p className="text-xs mt-1">
+                Please try again or contact support if the problem persists.
+              </p>
             </div>
           )}
           

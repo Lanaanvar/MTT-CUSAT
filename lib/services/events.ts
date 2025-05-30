@@ -140,136 +140,96 @@ export async function getEvents(filters?: {
 
     return events
   } catch (error) {
-    console.error('Error fetching events:', error)
-    // Return fallback data if Firestore is blocked or fails
-    console.log('Using fallback event data due to Firestore error');
-    
-    // Filter fallback data according to the same filters
-    let events = [...fallbackEvents];
-    
-    if (filters?.type && filters.type !== 'all') {
-      events = events.filter(event => event.type === filters.type);
-    }
-    
-    if (filters?.status && filters.status !== 'all') {
-      events = events.filter(event => event.status === filters.status);
-    }
-    
-    if (filters?.search) {
-      const searchLower = filters.search.toLowerCase();
-      events = events.filter(event =>
-        event.title.toLowerCase().includes(searchLower) ||
-        event.description.toLowerCase().includes(searchLower) ||
-        event.location.toLowerCase().includes(searchLower)
-      );
-    }
-    
-    return events;
+    // Return empty array on error
+    return [];
   }
 }
 
 export async function getEventById(id: string): Promise<Event | null> {
   try {
-    const eventDoc = await getDoc(doc(db, 'events', id))
-    if (!eventDoc.exists()) return null
+    const docRef = doc(db, 'events', id);
+    const docSnap = await getDoc(docRef);
     
-    return {
-      id: eventDoc.id,
-      ...normalizeEventData(eventDoc.data())
-    } as Event
-  } catch (error) {
-    console.error('Error fetching event:', error)
-    // Return fallback event if Firestore is blocked or fails
-    const fallbackEvent = fallbackEvents.find(event => event.id === id);
-    
-    // If no matching fallback event, find any fallback event
-    return fallbackEvent || fallbackEvents[0] || null;
-  }
-}
-
-export async function updateEvent(
-  id: string,
-  data: Partial<Omit<Event, 'id'>>
-): Promise<void> {
-  try {
-    const eventRef = doc(db, 'events', id)
-    await updateDoc(eventRef, data)
-  } catch (error) {
-    console.error('Error updating event:', error)
-    
-    // Store event updates in localStorage as fallback
-    try {
-      const offlineData = localStorage.getItem('offline_event_updates');
-      const updates = offlineData ? JSON.parse(offlineData) : {};
-      
-      // Store the update request with timestamp
-      updates[id] = {
-        data,
-        timestamp: new Date().toISOString()
-      };
-      
-      localStorage.setItem('offline_event_updates', JSON.stringify(updates));
-      console.log('Event update stored locally due to Firestore error');
-    } catch (storageError) {
-      console.error('Failed to store event update locally:', storageError);
+    if (docSnap.exists()) {
+      return {
+        id: docSnap.id,
+        ...docSnap.data()
+      } as Event;
     }
     
-    throw new Error('Failed to update event. Changes saved locally for later sync.');
+    return null;
+  } catch (error) {
+    return null;
   }
 }
 
-export async function createEvent(data: Omit<Event, 'id'>): Promise<string> {
+export async function updateEvent(id: string, data: Partial<Event>): Promise<boolean> {
+  try {
+    await updateDoc(doc(db, 'events', id), { 
+      ...data,
+      updatedAt: new Date().toISOString()
+    });
+    return true;
+  } catch (error) {
+    // If Firestore update fails, try to store update locally
+    try {
+      const existingItems = localStorage.getItem('pending-event-updates');
+      const pendingUpdates = existingItems ? JSON.parse(existingItems) : [];
+      pendingUpdates.push({ id, data, timestamp: new Date().toISOString() });
+      localStorage.setItem('pending-event-updates', JSON.stringify(pendingUpdates));
+      return true;
+    } catch (storageError) {
+      return false;
+    }
+  }
+}
+
+export async function createEvent(data: Omit<Event, 'id'>): Promise<string | null> {
   try {
     const eventsRef = collection(db, 'events');
-    const docRef = await addDoc(eventsRef, data);
+    const docRef = await addDoc(eventsRef, {
+      ...data,
+      createdAt: new Date().toISOString()
+    });
     return docRef.id;
   } catch (error) {
-    console.error('Error creating event:', error);
-    
-    // Store event creation in localStorage as fallback
+    // If Firestore creation fails, try to store locally
     try {
-      const fallbackId = `event-${Date.now()}`;
-      const fallbackData = { id: fallbackId, ...data };
+      const fallbackId = `offline-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+      const eventWithId = { 
+        id: fallbackId,
+        ...data,
+        isOffline: true,
+        createdAt: new Date().toISOString()
+      };
       
-      // Store in localStorage
-      const offlineData = localStorage.getItem('offline_events');
-      const offlineEvents = offlineData ? JSON.parse(offlineData) : [];
-      offlineEvents.push(fallbackData);
-      localStorage.setItem('offline_events', JSON.stringify(offlineEvents));
+      // Store offline
+      const existingItems = localStorage.getItem('offline-events');
+      const offlineEvents = existingItems ? JSON.parse(existingItems) : [];
+      offlineEvents.push(eventWithId);
+      localStorage.setItem('offline-events', JSON.stringify(offlineEvents));
       
-      console.log('Event stored locally due to Firestore error');
       return fallbackId;
     } catch (storageError) {
-      console.error('Failed to store event locally:', storageError);
-      throw new Error('Failed to create event');
+      return null;
     }
   }
 }
 
-export async function deleteEvent(id: string): Promise<void> {
+export async function deleteEvent(id: string): Promise<boolean> {
   try {
-    const eventRef = doc(db, 'events', id);
-    await deleteDoc(eventRef);
+    await deleteDoc(doc(db, 'events', id));
+    return true;
   } catch (error) {
-    console.error('Error deleting event:', error);
-    
-    // Record deletion request in localStorage as fallback
+    // If Firestore deletion fails, try to store deletion request locally
     try {
-      const offlineData = localStorage.getItem('offline_event_deletions');
-      const deletions = offlineData ? JSON.parse(offlineData) : [];
-      
-      // Add to deletion queue
-      deletions.push({
-        id,
-        timestamp: new Date().toISOString()
-      });
-      
-      localStorage.setItem('offline_event_deletions', JSON.stringify(deletions));
-      console.log('Event deletion request stored locally due to Firestore error');
+      const existingItems = localStorage.getItem('pending-event-deletions');
+      const pendingDeletions = existingItems ? JSON.parse(existingItems) : [];
+      pendingDeletions.push({ id, timestamp: new Date().toISOString() });
+      localStorage.setItem('pending-event-deletions', JSON.stringify(pendingDeletions));
+      return true;
     } catch (storageError) {
-      console.error('Failed to store event deletion locally:', storageError);
+      return false;
     }
-    
-    throw new Error('Failed to delete event. Request saved locally for later sync.');
   }
 } 

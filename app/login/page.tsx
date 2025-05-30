@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { toast } from 'sonner';
 import Cookies from 'js-cookie';
+import { use } from 'react';
 
 export default function LoginPage({
   searchParams,
@@ -28,7 +29,8 @@ export default function LoginPage({
   });
   
   const router = useRouter();
-  const redirectPath = searchParams.redirect || '/';
+  const params = use(Promise.resolve(searchParams));
+  const redirectPath = params.redirect || '/';
 
   const validateForm = () => {
     let isValid = true;

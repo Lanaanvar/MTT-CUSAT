@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
-import { ArrowLeft } from "lucide-react"
+import { ArrowLeft, Download } from "lucide-react"
 import {
   Table,
   TableBody,
@@ -30,6 +30,7 @@ import {
   type Registration
 } from "@/lib/services/registrations"
 import { getEventById, type Event } from "@/lib/services/events"
+import { convertRegistrationsToCSV, downloadCSV } from "../../../../lib/utils/csv"
 
 export default function EventRegistrationsPage({ params }: { params: { id: string } }) {
   const [event, setEvent] = useState<Event | null>(null)
@@ -112,6 +113,14 @@ export default function EventRegistrationsPage({ params }: { params: { id: strin
     }
   }
 
+  const handleExportCSV = () => {
+    if (!event || !registrations.length) return;
+    
+    const csvContent = convertRegistrationsToCSV(registrations);
+    const filename = `${event.title.toLowerCase().replace(/\s+/g, '-')}-registrations-${new Date().toISOString().split('T')[0]}.csv`;
+    downloadCSV(csvContent, filename);
+  };
+
   if (!event) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -139,6 +148,14 @@ export default function EventRegistrationsPage({ params }: { params: { id: strin
             {event.date} • {event.location}
           </p>
         </div>
+        <Button
+          variant="outline"
+          onClick={handleExportCSV}
+          disabled={!registrations.length}
+        >
+          <Download className="mr-2 h-4 w-4" />
+          Export CSV
+        </Button>
       </div>
 
       <Card>

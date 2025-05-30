@@ -1,6 +1,6 @@
 import { initializeApp, getApps, FirebaseApp } from 'firebase/app'
-import { getFirestore, enableIndexedDbPersistence, Firestore } from 'firebase/firestore'
-import { getAuth, Auth, signInAnonymously } from 'firebase/auth'
+import { getFirestore, Firestore } from 'firebase/firestore'
+import { getAuth, Auth } from 'firebase/auth'
 import { configureDomainAuth } from './firebaseConfig'
 
 const firebaseConfig = {
@@ -16,48 +16,29 @@ const firebaseConfig = {
 let app: FirebaseApp;
 let db: Firestore;
 let auth: Auth;
+let isAnonymousAuthEnabled = false; // Default to false
 
 // Basic mobile detection for UI adjustments only
 const isMobile = typeof window !== 'undefined' ? 
   /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) : false;
 
 try {
+  // Initialize Firebase app
   app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+  
+  // Initialize Firestore and Auth
   db = getFirestore(app);
   auth = getAuth(app);
-  
-  // Sign in anonymously for Firestore access
-  if (typeof window !== 'undefined') {
-    signInAnonymously(auth)
-      .then(() => {
-        console.log("Signed in anonymously for Firestore access");
-      })
-      .catch((error) => {
-        console.error("Anonymous auth error:", error);
-      });
-  }
   
   // Configure domain authorization
   if (typeof window !== 'undefined') {
     configureDomainAuth();
   }
-  
-  // Enable offline persistence for Firestore
-  if (typeof window !== 'undefined') {
-    enableIndexedDbPersistence(db)
-      .then(() => {
-        console.log("Persistence enabled");
-      })
-      .catch((err) => {
-        console.warn("Persistence could not be enabled:", err.code);
-      });
-  }
 } catch (error) {
-  console.error('Error initializing Firebase:', error);
-  // Attempt to initialize again if failed
+  // Attempt to initialize again if failed - silently
   if (!app) app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
   if (!db) db = getFirestore(app);
   if (!auth) auth = getAuth(app);
 }
 
-export { db, auth, isMobile } 
+export { db, auth, isMobile, isAnonymousAuthEnabled } 

@@ -9,14 +9,13 @@ import { Badge } from "@/components/ui/badge"
 import { getEventById, type Event } from "@/lib/services/events"
 
 export default function EventPage({ params }: { params: { id: string } }) {
-  const eventId = params.id;
   const [event, setEvent] = useState<Event | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const fetchEvent = async () => {
       try {
-        const eventData = await getEventById(eventId)
+        const eventData = await getEventById(params.id)
         setEvent(eventData)
       } catch (error) {
         console.error("Error fetching event:", error)
@@ -26,7 +25,7 @@ export default function EventPage({ params }: { params: { id: string } }) {
     }
 
     fetchEvent()
-  }, [eventId])
+  }, [params.id])
 
   if (loading) {
     return (

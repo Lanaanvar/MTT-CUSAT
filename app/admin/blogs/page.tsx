@@ -29,7 +29,6 @@ export default function BlogsManagement() {
       })) as Blog[];
       setBlogs(blogsData);
     } catch (error) {
-      console.error('Error fetching blogs:', error);
       toast.error('Failed to fetch blogs');
     } finally {
       setLoading(false);
@@ -44,7 +43,6 @@ export default function BlogsManagement() {
       toast.success('Blog deleted successfully');
       fetchBlogs();
     } catch (error) {
-      console.error('Error deleting blog:', error);
       toast.error('Failed to delete blog');
     }
   };
@@ -53,12 +51,11 @@ export default function BlogsManagement() {
     try {
       await updateDoc(doc(db, 'blogs', blog.id), {
         isPublished: !blog.isPublished,
-        updatedAt: new Date(),
+        updatedAt: new Date().toISOString(),
       });
       toast.success(`Blog ${blog.isPublished ? 'unpublished' : 'published'} successfully`);
       fetchBlogs();
     } catch (error) {
-      console.error('Error updating blog status:', error);
       toast.error('Failed to update blog status');
     }
   };

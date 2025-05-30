@@ -11,6 +11,7 @@ interface User {
   uid: string;
   email: string | null;
   isAdmin: boolean;
+  name: string;
 }
 
 interface AuthContextType {
@@ -31,31 +32,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const auth = getAuth();
     
-    // Handle auth state changes
+    // Listen for auth state changes
     const unsubscribeAuthState = onAuthStateChanged(auth, async (firebaseUser) => {
       try {
         if (firebaseUser) {
-          // Get additional user data from Firestore
+          // User is signed in
           const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
-          const userData = userDoc.data();
           
-          setUser({
+          // Create user object with Firebase auth data and Firestore data
+          const user = {
             uid: firebaseUser.uid,
             email: firebaseUser.email,
-            isAdmin: userData?.isAdmin || false,
-          });
+            isAdmin: userDoc.exists() ? userDoc.data()?.isAdmin || false : false,
+            name: userDoc.exists() ? userDoc.data()?.name || '' : '',
+            ...userDoc.exists() ? userDoc.data() : {}
+          };
+          
+          setUser(user);
+          setLoading(false);
         } else {
+          // User is signed out
           setUser(null);
           // If on a protected route and no user, clear cookie and redirect
           if (pathname?.startsWith('/admin')) {
             Cookies.remove('session');
             router.push('/login');
           }
+          setLoading(false);
         }
       } catch (error) {
-        console.error('Auth state change error:', error);
+        // Handle error silently
         setUser(null);
-      } finally {
         setLoading(false);
       }
     });
@@ -72,22 +79,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     // Set up periodic token refresh (every 55 minutes - Firebase tokens last 60 minutes)
-    const refreshInterval = setInterval(async () => {
-      const currentUser = auth.currentUser;
-      if (currentUser) {
+    let tokenRefreshInterval: NodeJS.Timeout;
+    
+    const setupTokenRefresh = () => {
+      tokenRefreshInterval = setInterval(async () => {
         try {
-          const token = await currentUser.getIdToken(true); // Force refresh
-          Cookies.set('session', token, { expires: 7 });
+          const currentUser = auth.currentUser;
+          if (currentUser) {
+            await currentUser.getIdToken(true);
+          }
         } catch (error) {
-          console.error('Token refresh error:', error);
+          // Silently handle token refresh errors
         }
-      }
-    }, 55 * 60 * 1000);
+      }, 55 * 60 * 1000); // 55 minutes
+    };
+    
+    setupTokenRefresh();
 
+    // Cleanup function
     return () => {
       unsubscribeAuthState();
       unsubscribeIdToken();
-      clearInterval(refreshInterval);
+      if (tokenRefreshInterval) clearInterval(tokenRefreshInterval);
     };
   }, [router, pathname]);
 
@@ -99,7 +112,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(null);
       router.push('/login');
     } catch (error) {
-      console.error('Sign out error:', error);
+      // Silently handle sign out errors
     }
   };
 

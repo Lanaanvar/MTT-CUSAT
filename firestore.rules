@@ -11,7 +11,7 @@ service cloud.firestore {
     
     // Allow anyone to create or read registrations without authentication
     match /registrations/{registrationId} {
-      // Explicitly allow unauthenticated users to create registrations
+      // Allow all operations on registrations
       allow create: if true;
       allow read: if true;
       allow update, delete: if request.auth != null;

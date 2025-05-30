@@ -11,7 +11,8 @@ import {
   deleteDoc,
   limit
 } from 'firebase/firestore'
-import { db } from '../firebase'
+import { db, auth, isAnonymousAuthEnabled } from '../firebase'
+import { signInAnonymously } from 'firebase/auth'
 
 export interface Registration {
   id: string
@@ -32,17 +33,25 @@ export interface Registration {
   paymentScreenshot?: string
 }
 
-export async function createRegistration(data: Omit<Registration, 'id'>): Promise<string> {
+export async function createRegistration(registrationData: Omit<Registration, 'id'>): Promise<string> {
+  // Ensure all required fields exist
+  const completeRegistrationData = {
+    ...registrationData,
+    status: registrationData.status || 'pending',
+    paymentStatus: registrationData.paymentStatus || 'pending',
+    amount: registrationData.amount || 0,
+    registrationDate: registrationData.registrationDate || new Date().toISOString(),
+    createdAt: new Date().toISOString()
+  };
+
+  // Direct attempt to create registration without auth check
   try {
-    // Simple, direct approach - just add to Firestore
     const registrationsRef = collection(db, 'registrations');
-    console.log('Adding registration to Firestore...');
-    const docRef = await addDoc(registrationsRef, data);
-    console.log('Registration added with ID:', docRef.id);
+    const docRef = await addDoc(registrationsRef, completeRegistrationData);
     return docRef.id;
   } catch (error) {
-    console.error('Error creating registration:', error);
-    throw error; // Re-throw to handle in the component
+    console.error("Registration creation failed:", error);
+    throw error;
   }
 }
 
@@ -93,39 +102,40 @@ export async function getRegistrations(filters?: {
 
 export async function getRegistrationById(id: string): Promise<Registration | null> {
   try {
-    const registrationDoc = await getDoc(doc(db, 'registrations', id))
-    if (!registrationDoc.exists()) return null
+    const docRef = doc(db, 'registrations', id);
+    const docSnap = await getDoc(docRef);
     
-    return {
-      id: registrationDoc.id,
-      ...registrationDoc.data()
-    } as Registration
+    if (docSnap.exists()) {
+      return {
+        id: docSnap.id,
+        ...docSnap.data()
+      } as Registration;
+    }
+    
+    return null;
   } catch (error) {
-    console.error('Error fetching registration:', error)
-    throw error;
+    return null;
   }
 }
 
-export async function updateRegistration(
-  id: string,
-  data: Partial<Omit<Registration, 'id'>>
-): Promise<void> {
+export async function updateRegistration(id: string, data: Partial<Registration>): Promise<boolean> {
   try {
-    const registrationRef = doc(db, 'registrations', id)
-    await updateDoc(registrationRef, data)
+    await updateDoc(doc(db, 'registrations', id), { 
+      ...data,
+      updatedAt: new Date().toISOString()
+    });
+    return true;
   } catch (error) {
-    console.error('Error updating registration:', error)
-    throw error;
+    return false;
   }
 }
 
-export async function deleteRegistration(id: string): Promise<void> {
+export async function deleteRegistration(id: string): Promise<boolean> {
   try {
-    const registrationRef = doc(db, 'registrations', id)
-    await deleteDoc(registrationRef)
+    await deleteDoc(doc(db, 'registrations', id));
+    return true;
   } catch (error) {
-    console.error('Error deleting registration:', error)
-    throw error;
+    return false;
   }
 }
 
@@ -147,5 +157,23 @@ export const getRegistrationsByEventAndEmail = async (eventId: string) => {
   } catch (error) {
     console.error('Error getting registrations:', error)
     throw error;
+  }
+}
+
+export async function getRegistrationsByEventId(eventId: string): Promise<Registration[]> {
+  try {
+    const q = query(
+      collection(db, 'registrations'),
+      where('eventId', '==', eventId)
+    );
+    
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    } as Registration));
+  } catch (error) {
+    // Return empty array on error
+    return [];
   }
 } 
