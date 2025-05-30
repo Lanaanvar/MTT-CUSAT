@@ -26,7 +26,7 @@ const execomMembers = {
     },
     {
       id: 9,
-      name: "Dr. Deepthi Das Krishna",
+      name: "Dr. Deepti Das Krishna",
       position: "Society Chapter Advisor",
       image: "/Execom/Advisor.jpg",
       department: "Electronics Engineering",
